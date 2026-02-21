@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TRANSAD APK</string>
+    <string name="hello_world">Una pruab de la apk de la pistola</string>
+    <string name="welcome_message">Bienvenido a TRANSAD APK</string>
+</resources>
