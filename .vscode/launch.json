@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Android: instalar y ejecutar en emulador",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": ".\\gradlew.bat installDebug",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

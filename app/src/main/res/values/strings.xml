@@ -1,6 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TRANSAD APK</string>
+    <string name="app_name">TRANSAD</string>
     <string name="hello_world">Una pruab de la apk de la pistola</string>
     <string name="welcome_message">Bienvenido a TRANSAD APK</string>
+
+    <string name="login_title">Iniciar sesión</string>
+    <string name="login_subtitle">Ingresa tus credenciales para continuar</string>
+    <string name="login_usuario">Usuario o correo</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_btn">Entrar</string>
+    <string name="login_error_campos">Completa usuario y contraseña</string>
+    <string name="login_error_credenciales">Usuario o contraseña incorrectos</string>
+    <string name="login_error_red">Error de red:</string>
+
+    <string name="orders_title">Órdenes</string>
+    <string name="order_status_active">Activa</string>
+    <string name="order_status_inactive">Inactiva</string>
+    <string name="orders_loading">Cargando órdenes…</string>
+    <string name="orders_empty">No hay órdenes</string>
+    <string name="orders_error">Error al cargar las órdenes</string>
+
+    <string name="menu_inicio">Inicio</string>
+    <string name="menu_ordenes">Órdenes</string>
+    <string name="menu_perfil">Perfil</string>
+    <string name="menu_section_cuenta">Cuenta</string>
+    <string name="menu_logout">Cerrar sesión</string>
 </resources>
