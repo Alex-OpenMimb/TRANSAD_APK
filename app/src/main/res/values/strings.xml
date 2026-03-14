@@ -19,6 +19,23 @@
     <string name="orders_empty">No hay órdenes</string>
     <string name="orders_error">Error al cargar las órdenes</string>
 
+    <string name="order_products_title">Productos de la orden</string>
+    <string name="order_products_empty">Esta orden no tiene productos</string>
+    <string name="order_product_reference">Ref: %1$s</string>
+    <string name="order_product_quantity">Cant: %1$d</string>
+    <string name="order_product_scanned">Escaneados: %1$d</string>
+
+    <string name="rfid_btn_read">Leer RFID</string>
+    <string name="rfid_sheet_title">Leer chips RFID</string>
+    <string name="rfid_sheet_listening">Modo lectura activo. Acerque el lector al chip.</string>
+    <string name="rfid_sheet_tags_read">Lecturas: %1$d</string>
+    <string name="rfid_sheet_add_test">Añadir (prueba)</string>
+    <string name="rfid_sheet_send">Enviar lecturas a la API</string>
+    <string name="rfid_sheet_close">Cerrar</string>
+    <string name="rfid_hint_tag">Código del chip</string>
+    <string name="rfid_send_ok">Lecturas enviadas correctamente</string>
+    <string name="rfid_send_error">Error al enviar lecturas</string>
+
     <string name="menu_inicio">Inicio</string>
     <string name="menu_ordenes">Órdenes</string>
     <string name="menu_perfil">Perfil</string>

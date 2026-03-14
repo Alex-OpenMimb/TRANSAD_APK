@@ -64,6 +64,17 @@
       "problemMatcher": []
     },
     {
+      "label": "Android: ver logcat (crash de la app)",
+      "detail": "Abre la app en el emulador y mira aquí el error si se cierra.",
+      "type": "shell",
+      "command": "${env:LOCALAPPDATA}\\Android\\Sdk\\platform-tools\\adb.exe",
+      "args": ["logcat", "-s", "AndroidRuntime:E", "*:E"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "none",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
       "label": "Android: limpiar proyecto",
       "type": "shell",
       "command": ".\\gradlew.bat",

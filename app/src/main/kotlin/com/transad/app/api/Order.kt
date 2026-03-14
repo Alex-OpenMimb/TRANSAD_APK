@@ -1,7 +1,9 @@
 package com.transad.app.api
 
+import android.os.Parcelable
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 data class OrdersResponse(
     @SerializedName("data") val data: List<Order>,
@@ -21,7 +23,7 @@ data class Order(
     @SerializedName("document") val document: JsonElement? = null,
     @SerializedName("created_at") val createdAt: String,
     @SerializedName("updated_at") val updatedAt: String,
-    @SerializedName("order_products") val orderProducts: List<Any>? = null
+    @SerializedName("order_products") val orderProducts: List<OrderProduct>? = null
 ) {
     /** Obtiene las observaciones del document (puede ser objeto o array vacío). */
     fun getObservations(): String {
@@ -32,3 +34,41 @@ data class Order(
         return if (obs.isJsonNull) "" else obs.asString
     }
 }
+
+@Parcelize
+data class OrderProduct(
+    @SerializedName("id") val id: Int,
+    @SerializedName("order_id") val orderId: Int,
+    @SerializedName("requisition_product_id") val requisitionProductId: Int,
+    @SerializedName("productable_type") val productableType: String? = null,
+    @SerializedName("productable_id") val productableId: Int,
+    @SerializedName("scanned_quantity") val scannedQuantity: Int = 0,
+    @SerializedName("product_quantity") val productQuantity: Int,
+    @SerializedName("created_at") val createdAt: String? = null,
+    @SerializedName("updated_at") val updatedAt: String? = null,
+    @SerializedName("productable") val productable: Product? = null
+) : Parcelable
+
+/** Petición para enviar lecturas RFID al backend. */
+data class RfidScansRequest(
+    @SerializedName("tags") val tags: List<String>
+)
+
+/** Respuesta del endpoint de lecturas RFID. Ajusta campos según tu API. */
+data class RfidScansResponse(
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("success") val success: Boolean = false
+)
+
+@Parcelize
+data class Product(
+    @SerializedName("id") val id: Int,
+    @SerializedName("code") val code: String? = null,
+    @SerializedName("reference") val reference: String? = null,
+    @SerializedName("id_erp") val idErp: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("brand_name") val brandName: String? = null,
+    @SerializedName("condition_name") val conditionName: String? = null,
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("status") val status: Boolean = true
+) : Parcelable

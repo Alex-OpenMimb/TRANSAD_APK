@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.transad.app.api.Order
 import com.transad.app.databinding.ItemOrderBinding
 
-class OrdersAdapter : ListAdapter<Order, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
+class OrdersAdapter(
+    private val onOrderClick: (Order) -> Unit
+) : ListAdapter<Order, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
         val binding = ItemOrderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -16,11 +18,12 @@ class OrdersAdapter : ListAdapter<Order, OrdersAdapter.OrderViewHolder>(OrderDif
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), onOrderClick)
     }
 
     class OrderViewHolder(private val binding: ItemOrderBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(order: Order) {
+        fun bind(order: Order, onOrderClick: (Order) -> Unit) {
+            binding.root.setOnClickListener { onOrderClick(order) }
             binding.tvOrderReference.text = order.reference
             binding.tvOrderType.text = order.typeOrder
             binding.tvOrderObservations.text = order.getObservations().ifBlank { "—" }

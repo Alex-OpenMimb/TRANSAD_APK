@@ -53,13 +53,15 @@ if (-not $bootOk) {
     Write-Host "El emulador tarda mucho. Puedes instalar la app más tarde con Ctrl+Shift+B." -ForegroundColor Yellow
 }
 
-# Ir a la carpeta del proyecto (raíz, donde está gradlew.bat)
-# Si el script está en scripts/run-android.ps1, la raíz es el padre de scripts
+# Ir SIEMPRE a la carpeta del proyecto TRANSAD_APK (donde está este script).
+# Así aunque tengas abierto el padre (TRANSAD) o otro proyecto Titanium, se compila e instala esta app.
 $projectRoot = (Split-Path -Parent $PSScriptRoot)
-if ($env:WORKSPACE_FOLDER) {
+# Solo usar WORKSPACE_FOLDER si es exactamente esta carpeta (evita que sea la carpeta padre)
+if ($env:WORKSPACE_FOLDER -and (Test-Path (Join-Path $env:WORKSPACE_FOLDER "app\build.gradle.kts"))) {
     $projectRoot = $env:WORKSPACE_FOLDER
 }
 Set-Location $projectRoot
+Write-Host "Proyecto: $projectRoot" -ForegroundColor Gray
 
 # Para que Gradle encuentre el SDK (igual que el emulador)
 $env:ANDROID_HOME = $sdkPath
@@ -68,9 +70,20 @@ Write-Host "Instalando la app en el emulador..." -ForegroundColor Cyan
 & .\gradlew.bat installDebug
 
 if ($LASTEXITCODE -eq 0) {
+    $package = "com.transad.app"
     Write-Host "Abriendo la app TRANSAD en el emulador..." -ForegroundColor Cyan
-    & $adb shell am start -n com.transad.app/.LoginActivity
-    Write-Host "Listo. La app debería estar abierta en el emulador." -ForegroundColor Green
+    & $adb shell am force-stop $package 2>$null
+    $startResult = & $adb shell am start -n "${package}/.LoginActivity" -a android.intent.action.MAIN 2>&1
+    if ($startResult -match "Error") {
+        Write-Host $startResult -ForegroundColor Red
+    } else {
+        Write-Host "Listo. Si la app se cierra sola, en 4 s se mostrará el logcat del fallo..." -ForegroundColor Green
+        Start-Sleep -Seconds 4
+        Write-Host "--- Logcat (errores / crash de la app) ---" -ForegroundColor Yellow
+        $log = & $adb logcat -d -t 300 2>$null
+        $log | Select-String -Pattern "FATAL|Exception|at com\.transad|AndroidRuntime" -Context 0,1 | ForEach-Object { $_.Line; if ($_.Context.PostContext) { $_.Context.PostContext } }
+        Write-Host "--- Fin logcat ---" -ForegroundColor Yellow
+    }
 } else {
     Write-Host "Error al instalar. Revisa el mensaje de arriba." -ForegroundColor Red
     exit 1
