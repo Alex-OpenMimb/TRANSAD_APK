@@ -18,6 +18,11 @@
     <string name="orders_loading">Cargando órdenes…</string>
     <string name="orders_empty">No hay órdenes</string>
     <string name="orders_error">Error al cargar las órdenes</string>
+    <string name="inventory_title">Inventario</string>
+    <string name="inventory_empty">No hay productos en inventario</string>
+    <string name="inventory_error">Error al cargar el inventario</string>
+    <string name="inventory_stock">Stock: %1$d</string>
+    <string name="inventory_cost">Costo: %1$s</string>
 
     <string name="order_products_title">Productos de la orden</string>
     <string name="order_products_empty">Esta orden no tiene productos</string>
@@ -38,6 +43,7 @@
 
     <string name="menu_inicio">Inicio</string>
     <string name="menu_ordenes">Órdenes</string>
+    <string name="menu_inventario">Inventario</string>
     <string name="menu_perfil">Perfil</string>
     <string name="menu_section_cuenta">Cuenta</string>
     <string name="menu_logout">Cerrar sesión</string>

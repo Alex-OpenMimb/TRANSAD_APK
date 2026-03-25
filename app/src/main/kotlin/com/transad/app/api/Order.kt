@@ -12,6 +12,13 @@ data class OrdersResponse(
     @SerializedName("status") val status: Int = 0
 )
 
+data class ProductsResponse(
+    @SerializedName("data") val data: List<Product>,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("response") val response: Boolean = false,
+    @SerializedName("status") val status: Int = 0
+)
+
 data class Order(
     @SerializedName("id") val id: Int,
     @SerializedName("user_id") val userId: Int,
@@ -70,5 +77,7 @@ data class Product(
     @SerializedName("brand_name") val brandName: String? = null,
     @SerializedName("condition_name") val conditionName: String? = null,
     @SerializedName("description") val description: String? = null,
-    @SerializedName("status") val status: Boolean = true
+    @SerializedName("status") val status: Boolean = true,
+    @SerializedName("stock_quantity") val stockQuantity: Int = 0,
+    @SerializedName("cost") val cost: String? = null
 ) : Parcelable

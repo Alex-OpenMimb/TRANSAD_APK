@@ -17,3 +17,8 @@ interface OrdersApi {
         @Body body: RfidScansRequest
     ): Call<RfidScansResponse>
 }
+
+interface ProductsApi {
+    @GET("api/products")
+    fun getProducts(): Call<ProductsResponse>
+}

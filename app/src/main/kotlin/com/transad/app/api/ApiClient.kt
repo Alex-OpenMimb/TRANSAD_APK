@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    private const val BASE_URL = "http://192.168.80.23:8000/"
+    private const val BASE_URL = "https://staging.tires.transadsas-group.com/"
 
     private var appContext: Context? = null
 
@@ -58,4 +58,5 @@ object ApiClient {
 
     val authApi: AuthApi get() = retrofit.create(AuthApi::class.java)
     val ordersApi: OrdersApi get() = retrofit.create(OrdersApi::class.java)
+    val productsApi: ProductsApi get() = retrofit.create(ProductsApi::class.java)
 }

@@ -51,6 +51,10 @@ class MainActivity : AppCompatActivity() {
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     if (item.itemId == R.id.nav_ordenes) loadOrders()
                 }
+                R.id.nav_inventario -> {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    startActivity(Intent(this, InventoryActivity::class.java))
+                }
                 R.id.nav_perfil -> {
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     Toast.makeText(this, "Próximamente", Toast.LENGTH_SHORT).show()

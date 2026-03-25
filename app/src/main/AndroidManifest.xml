@@ -27,6 +27,10 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
+            android:name=".InventoryActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+        <activity
             android:name=".OrderDetailActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
