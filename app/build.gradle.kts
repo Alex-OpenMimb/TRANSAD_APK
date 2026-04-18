@@ -43,6 +43,10 @@ android {
 }
 
 dependencies {
+    // Chainway C72: DeviceAPI UHF (cualquier `*.aar` en libs; incluido `DeviceAPI_ver20220518_release.aar`).
+    // Actualizaciones oficiales: https://www.chainway.net/ → Soporte → C72 → SDK (API más reciente que la de comunidad).
+    implementation(fileTree("libs") { include("*.aar") })
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

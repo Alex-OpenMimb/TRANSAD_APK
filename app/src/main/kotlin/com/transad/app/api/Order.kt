@@ -56,9 +56,22 @@ data class OrderProduct(
     @SerializedName("productable") val productable: Product? = null
 ) : Parcelable
 
+/**
+ * Una lectura RFID completada con datos de llanta (cuerpo sugerido para `POST .../scans`).
+ * Ajusta [SerializedName] si tu backend usa otros nombres de campo.
+ */
+data class RfidScanPayload(
+    @SerializedName("rfid_code") val rfidCode: String,
+    @SerializedName("tire_code") val tireCode: String,
+    @SerializedName("position") val position: String,
+    @SerializedName("observation") val observation: String? = null,
+    @SerializedName("tire_depth") val tireDepth: String? = null,
+    @SerializedName("tire_thickness") val tireThickness: String? = null
+)
+
 /** Petición para enviar lecturas RFID al backend. */
 data class RfidScansRequest(
-    @SerializedName("tags") val tags: List<String>
+    @SerializedName("scans") val scans: List<RfidScanPayload>
 )
 
 /** Respuesta del endpoint de lecturas RFID. Ajusta campos según tu API. */

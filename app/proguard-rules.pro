@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Chainway C72 / DeviceAPI (UHF, código de barras, etc.): evitar ofuscación si activas minify.
+-keep class com.rscja.** { *; }
+-dontwarn com.rscja.**
