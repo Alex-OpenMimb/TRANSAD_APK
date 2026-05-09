@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-
+    
     private const val BASE_URL = "https://staging.tires.transadsas-group.com/"
 
     private var appContext: Context? = null

@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         adapter = OrdersAdapter { order ->
             val intent = Intent(this, OrderDetailActivity::class.java).apply {
                 putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.id)
+                putExtra(OrderDetailActivity.EXTRA_ORDER_USER_ID, order.userId)
                 putExtra(OrderDetailActivity.EXTRA_ORDER_REFERENCE, order.reference)
                 putParcelableArrayListExtra(OrderDetailActivity.EXTRA_ORDER_PRODUCTS, ArrayList(order.orderProducts ?: emptyList()))
             }

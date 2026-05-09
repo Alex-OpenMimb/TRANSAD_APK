@@ -44,6 +44,11 @@
     <string name="rfid_hint_tag">Código del chip</string>
     <string name="rfid_send_ok">Lecturas enviadas correctamente</string>
     <string name="rfid_send_error">Error al enviar lecturas</string>
+    <string name="product_entity_error_no_tag">La orden no tiene líneas de etiqueta RFID pendientes.</string>
+    <string name="product_entity_error_no_tire">La orden no tiene líneas de llanta pendientes.</string>
+    <string name="product_entity_error_no_tag_left">No quedan líneas de etiqueta libres para la cantidad de lecturas.</string>
+    <string name="product_entity_error_no_tire_match">No hay llanta en la orden con código coincidente: %1$s</string>
+    <string name="product_entity_error_user">Falta el usuario de la orden. Vuelve a abrir el detalle desde el listado.</string>
 
     <string name="rfid_detail_title">Datos de la lectura RFID</string>
     <string name="rfid_detail_rfid_label">Código RFID leído</string>

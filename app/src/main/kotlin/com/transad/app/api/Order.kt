@@ -53,31 +53,44 @@ data class OrderProduct(
     @SerializedName("product_quantity") val productQuantity: Int,
     @SerializedName("created_at") val createdAt: String? = null,
     @SerializedName("updated_at") val updatedAt: String? = null,
-    @SerializedName("productable") val productable: Product? = null
+    @SerializedName("productable") val productable: Product? = null,
+    @SerializedName("status") val orderLineStatus: String? = null
 ) : Parcelable
 
-/**
- * Una lectura RFID completada con datos de llanta (cuerpo sugerido para `POST .../scans`).
- * Ajusta [SerializedName] si tu backend usa otros nombres de campo.
- */
+/** Datos capturados en el modal tras leer un RFID (solo uso en app). */
 data class RfidScanPayload(
-    @SerializedName("rfid_code") val rfidCode: String,
-    @SerializedName("tire_code") val tireCode: String,
+    val rfidCode: String,
+    val tireCode: String,
+    val position: String,
+    val observation: String? = null,
+    val tireDepth: String? = null,
+    val tireThickness: String? = null
+)
+
+/** `POST api/product-entities` */
+data class ProductEntitiesRequest(
+    @SerializedName("items") val items: List<ProductEntityItem>
+)
+
+data class ProductEntityItem(
+    @SerializedName("product_id") val productId: Int,
+    @SerializedName("quantity") val quantity: Int = 1,
+    @SerializedName("order_product_id") val orderProductId: Int,
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("code") val code: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("additional_information") val additionalInformation: ProductEntityAdditionalInformation? = null
+)
+
+data class ProductEntityAdditionalInformation(
+    @SerializedName("description") val description: String? = null,
     @SerializedName("position") val position: String,
-    @SerializedName("observation") val observation: String? = null,
-    @SerializedName("tire_depth") val tireDepth: String? = null,
-    @SerializedName("tire_thickness") val tireThickness: String? = null
+    @SerializedName("observation") val observation: String? = null
 )
 
-/** Petición para enviar lecturas RFID al backend. */
-data class RfidScansRequest(
-    @SerializedName("scans") val scans: List<RfidScanPayload>
-)
-
-/** Respuesta del endpoint de lecturas RFID. Ajusta campos según tu API. */
-data class RfidScansResponse(
+data class ProductEntitiesResponse(
     @SerializedName("message") val message: String? = null,
-    @SerializedName("success") val success: Boolean = false
+    @SerializedName("success") val success: Boolean? = null
 )
 
 @Parcelize
