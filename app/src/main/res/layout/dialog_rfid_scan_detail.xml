@@ -33,11 +33,27 @@
             tools:text="E2801160600002034567890A" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilTireCode"
+            android:id="@+id/tilLicensePlate"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:hint="@string/rfid_hint_license_plate">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etLicensePlate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapCharacters"
+                android:imeOptions="actionNext" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTireCode"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:hint="@string/rfid_hint_tire_code">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -60,7 +76,7 @@
                 android:id="@+id/etPosition"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
+                android:inputType="number"
                 android:imeOptions="actionNext" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,38 +95,6 @@
                 android:gravity="top"
                 android:inputType="textMultiLine"
                 android:lines="2"
-                android:imeOptions="actionNext" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilTireDepth"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/rfid_hint_depth">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTireDepth"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:imeOptions="actionNext" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilTireThickness"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/rfid_hint_thickness">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTireThickness"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
                 android:imeOptions="actionDone" />
         </com.google.android.material.textfield.TextInputLayout>
 

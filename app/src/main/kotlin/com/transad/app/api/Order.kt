@@ -12,6 +12,20 @@ data class OrdersResponse(
     @SerializedName("status") val status: Int = 0
 )
 
+data class OrderResponse(
+    @SerializedName("data") val data: Order,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("response") val response: Boolean = false,
+    @SerializedName("status") val status: Int = 0
+)
+
+data class CostCentersResponse(
+    @SerializedName("data") val data: List<CostCenter>,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("response") val response: Boolean = false,
+    @SerializedName("status") val status: Int = 0
+)
+
 data class ProductsResponse(
     @SerializedName("data") val data: List<Product>,
     @SerializedName("message") val message: String? = null,
@@ -19,19 +33,34 @@ data class ProductsResponse(
     @SerializedName("status") val status: Int = 0
 )
 
+@Parcelize
+data class CostCenter(
+    @SerializedName("id") val id: Int,
+    @SerializedName("license_plate") val licensePlate: String? = null,
+    @SerializedName("reference") val reference: String? = null,
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("status") val status: Boolean = true
+) : Parcelable
+
 data class Order(
     @SerializedName("id") val id: Int,
     @SerializedName("user_id") val userId: Int,
     @SerializedName("business_id") val businessId: Int,
     @SerializedName("requisition_id") val requisitionId: Int,
+    @SerializedName("cost_center_id") val costCenterId: Int? = null,
     @SerializedName("reference") val reference: String,
     @SerializedName("status") val status: Boolean,
     @SerializedName("type_order") val typeOrder: String,
     @SerializedName("document") val document: JsonElement? = null,
     @SerializedName("created_at") val createdAt: String,
     @SerializedName("updated_at") val updatedAt: String,
+    @SerializedName("cost_center") val costCenter: CostCenter? = null,
     @SerializedName("order_products") val orderProducts: List<OrderProduct>? = null
 ) {
+    /** Placa del centro de costo asociado a la orden, si viene en la API. */
+    fun licensePlateFromCostCenter(): String =
+        costCenter?.licensePlate?.trim()?.takeIf { it.isNotEmpty() }?.uppercase() ?: ""
+
     /** Obtiene las observaciones del document (puede ser objeto o array vacío). */
     fun getObservations(): String {
         if (document == null || !document.isJsonObject) return ""
@@ -54,17 +83,18 @@ data class OrderProduct(
     @SerializedName("created_at") val createdAt: String? = null,
     @SerializedName("updated_at") val updatedAt: String? = null,
     @SerializedName("productable") val productable: Product? = null,
-    @SerializedName("status") val orderLineStatus: String? = null
+    @SerializedName("status") val orderLineStatus: String? = null,
+    /** `etiqueta` | `llanta` — prioridad sobre inferencia por nombre del producto. */
+    @SerializedName("type") val lineType: String? = null
 ) : Parcelable
 
 /** Datos capturados en el modal tras leer un RFID (solo uso en app). */
 data class RfidScanPayload(
     val rfidCode: String,
     val tireCode: String,
-    val position: String,
-    val observation: String? = null,
-    val tireDepth: String? = null,
-    val tireThickness: String? = null
+    val licensePlate: String,
+    val position: Int,
+    val observation: String? = null
 )
 
 /** `POST api/product-entities` */
@@ -79,13 +109,15 @@ data class ProductEntityItem(
     @SerializedName("user_id") val userId: Int,
     @SerializedName("code") val code: String,
     @SerializedName("type") val type: String,
+    @SerializedName("license_plate") val licensePlate: String,
+    @SerializedName("position") val position: Int,
+    /** Obligatorio en `type: etiqueta`: id de la línea llanta emparejada en el mismo envío. */
+    @SerializedName("paired_order_product_id") val pairedOrderProductId: Int? = null,
     @SerializedName("additional_information") val additionalInformation: ProductEntityAdditionalInformation? = null
 )
 
 data class ProductEntityAdditionalInformation(
-    @SerializedName("description") val description: String? = null,
-    @SerializedName("position") val position: String,
-    @SerializedName("observation") val observation: String? = null
+    @SerializedName("observacion") val observacion: String
 )
 
 data class ProductEntitiesResponse(

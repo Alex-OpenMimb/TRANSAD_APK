@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     
-    private const val BASE_URL = "https://staging.tires.transadsas-group.com/"
+    private const val BASE_URL = "http://192.168.1.11:8000/"
 
     private var appContext: Context? = null
 
@@ -35,9 +35,7 @@ object ApiClient {
         chain.proceed(newRequest)
     }
 
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
+    private val loggingInterceptor by lazy { createApiLoggingInterceptor() }
 
     private val okHttp: OkHttpClient by lazy {
         OkHttpClient.Builder()
@@ -59,4 +57,5 @@ object ApiClient {
     val authApi: AuthApi get() = retrofit.create(AuthApi::class.java)
     val ordersApi: OrdersApi get() = retrofit.create(OrdersApi::class.java)
     val productsApi: ProductsApi get() = retrofit.create(ProductsApi::class.java)
+    val costCentersApi: CostCentersApi get() = retrofit.create(CostCentersApi::class.java)
 }

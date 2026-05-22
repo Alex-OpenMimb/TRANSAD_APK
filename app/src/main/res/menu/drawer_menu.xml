@@ -13,9 +13,17 @@
         android:icon="@android:drawable/ic_menu_agenda"
         android:title="@string/menu_inventario" />
     <item
+        android:id="@+id/nav_inspeccion"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/menu_inspeccion" />
+    <item
         android:id="@+id/nav_perfil"
         android:icon="@android:drawable/ic_menu_manage"
         android:title="@string/menu_perfil" />
+    <item
+        android:id="@+id/nav_api_logs"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="@string/menu_api_logs" />
     <item
         android:id="@+id/nav_logout"
         android:icon="@android:drawable/ic_lock_power_off"

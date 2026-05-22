@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Marca TRANSAD -->
+    <color name="transad_primary">#FF005F73</color>
+    <color name="transad_primary_dark">#FF004552</color>
+    <color name="transad_primary_light">#FF0A7A94</color>
+    <color name="transad_accent">#FF94D2BD</color>
+
+    <!-- Compatibilidad con referencias antiguas del template -->
+    <color name="purple_200">@color/transad_accent</color>
+    <color name="purple_500">@color/transad_primary</color>
+    <color name="purple_700">@color/transad_primary_dark</color>
+    <color name="teal_200">@color/transad_accent</color>
+    <color name="teal_700">@color/transad_primary_dark</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="status_active">#FF4CAF50</color>

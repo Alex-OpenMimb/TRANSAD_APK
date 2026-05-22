@@ -31,7 +31,19 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
         <activity
+            android:name=".InspectionActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".InspectionDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".InspectionActivity" />
+        <activity
             android:name=".OrderDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".ApiLogsActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
     </application>

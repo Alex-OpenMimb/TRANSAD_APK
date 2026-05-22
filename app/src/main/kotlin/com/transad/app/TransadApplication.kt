@@ -6,5 +6,6 @@ class TransadApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         com.transad.app.api.ApiClient.init(applicationContext)
+        com.transad.app.api.ApiLogFile.init(applicationContext)
     }
 }
