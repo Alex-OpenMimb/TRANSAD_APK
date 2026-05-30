@@ -9,6 +9,9 @@ interface AuthApi {
     @POST("api/auth/login")
     fun login(@Body body: LoginRequest): Call<LoginResponse>
 
+    @POST("api/auth/me")
+    fun getMe(): Call<MeResponse>
+
     @POST("api/auth/logout")
     fun logout(): Call<ResponseBody>
 }

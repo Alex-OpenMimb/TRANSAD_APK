@@ -87,26 +87,22 @@ class OrderDetailActivity : AppCompatActivity() {
         licensePlateStore = OrderLicensePlateStore(this)
         resolveOrderLicensePlate(intent.getStringExtra(EXTRA_ORDER_LICENSE_PLATE))
 
-        val products = intent.getParcelableArrayListExtra<OrderProduct>(EXTRA_ORDER_PRODUCTS) ?: arrayListOf()
-        orderProductsList = products
-
         adapter = OrderProductsAdapter()
         binding.recyclerOrderProducts.layoutManager = LinearLayoutManager(this)
         binding.recyclerOrderProducts.adapter = adapter
 
         binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        if (products.isEmpty()) {
-            binding.recyclerOrderProducts.visibility = View.GONE
-            binding.tvEmptyProducts.visibility = View.VISIBLE
-            binding.fabReadRfid.visibility = View.GONE
-        } else {
-            binding.tvEmptyProducts.visibility = View.GONE
-            binding.recyclerOrderProducts.visibility = View.VISIBLE
-            binding.fabReadRfid.visibility = View.VISIBLE
-            adapter.submitList(products)
+        binding.recyclerOrderProducts.visibility = View.GONE
+        binding.tvEmptyProducts.visibility = View.GONE
+        binding.fabReadRfid.visibility = View.GONE
+        binding.progressProducts.visibility = View.VISIBLE
 
-            binding.fabReadRfid.setOnClickListener { ensureOrderLicensePlateThen { showRfidReadBottomSheet() } }
+        refreshOrderFromApi { success ->
+            binding.progressProducts.visibility = View.GONE
+            if (!success) {
+                binding.tvEmptyProducts.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -118,6 +114,11 @@ class OrderDetailActivity : AppCompatActivity() {
         ApiClient.ordersApi.getOrder(orderId).enqueue(object : Callback<OrderResponse> {
             override fun onResponse(call: Call<OrderResponse>, response: Response<OrderResponse>) {
                 if (!response.isSuccessful) {
+                    ApiErrorUi.showHttpError(
+                        this@OrderDetailActivity,
+                        getString(R.string.order_detail_load_error),
+                        response
+                    )
                     onComplete(false)
                     return
                 }
@@ -138,11 +139,17 @@ class OrderDetailActivity : AppCompatActivity() {
                     binding.recyclerOrderProducts.visibility = View.VISIBLE
                     binding.fabReadRfid.visibility = View.VISIBLE
                     adapter.submitList(orderProductsList)
+                    binding.fabReadRfid.setOnClickListener { ensureOrderLicensePlateThen { showRfidReadBottomSheet() } }
                 }
                 onComplete(true)
             }
 
             override fun onFailure(call: Call<OrderResponse>, t: Throwable) {
+                ApiErrorUi.showNetworkError(
+                    this@OrderDetailActivity,
+                    getString(R.string.order_detail_load_error),
+                    t
+                )
                 onComplete(false)
             }
         })
@@ -479,11 +486,10 @@ class OrderDetailActivity : AppCompatActivity() {
                                         sheetBinding.btnSendRfid.isEnabled = true
                                         Toast.makeText(this@OrderDetailActivity, R.string.rfid_send_ok, Toast.LENGTH_SHORT).show()
                                         if (!refreshed) {
-                                            Toast.makeText(
+                                            ApiErrorUi.show(
                                                 this@OrderDetailActivity,
-                                                R.string.order_refresh_error,
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                                getString(R.string.order_refresh_error)
+                                            )
                                         }
                                         rfidScanRows.clear()
                                         refreshTagsList()
@@ -491,17 +497,21 @@ class OrderDetailActivity : AppCompatActivity() {
                                     }
                                 } else {
                                     sheetBinding.btnSendRfid.isEnabled = true
-                                    Toast.makeText(this@OrderDetailActivity, R.string.rfid_send_error, Toast.LENGTH_SHORT).show()
+                                    ApiErrorUi.showHttpError(
+                                        this@OrderDetailActivity,
+                                        getString(R.string.rfid_send_error),
+                                        response
+                                    )
                                 }
                             }
 
                             override fun onFailure(call: Call<ProductEntitiesResponse>, t: Throwable) {
                                 sheetBinding.btnSendRfid.isEnabled = true
-                                Toast.makeText(
+                                ApiErrorUi.showNetworkError(
                                     this@OrderDetailActivity,
-                                    getString(R.string.rfid_send_error) + " " + t.message,
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                    getString(R.string.rfid_send_error),
+                                    t
+                                )
                             }
                         })
                 },
@@ -516,7 +526,7 @@ class OrderDetailActivity : AppCompatActivity() {
                         "NO_LICENSE_PLATE" -> getString(R.string.rfid_validation_required_license_plate)
                         else -> e.message?.ifEmpty { null } ?: getString(R.string.rfid_send_error)
                     }
-                    Toast.makeText(this@OrderDetailActivity, msg, Toast.LENGTH_LONG).show()
+                    ApiErrorUi.show(this@OrderDetailActivity, msg)
                 }
             )
         }

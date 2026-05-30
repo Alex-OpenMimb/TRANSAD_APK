@@ -22,9 +22,14 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (SessionManager(this).isLoggedIn()) {
-            irAMain()
+        val session = SessionManager(this)
+        if (session.isLoggedIn() && session.isSessionForBaseUrl(ApiClient.BASE_URL)) {
+            irAHome()
             return
+        }
+        if (session.isLoggedIn()) {
+            session.logout()
+            Toast.makeText(this, R.string.login_error_server_changed, Toast.LENGTH_LONG).show()
         }
 
         binding.btnLogin.setOnClickListener { intentarLogin() }
@@ -56,8 +61,8 @@ class LoginActivity : AppCompatActivity() {
                     val body = response.body()
                     if (body != null) {
                         val session = SessionManager(this@LoginActivity)
-                        session.saveToken(body.accessToken, body.expiresIn)
-                        runOnUiThread { irAMain() }
+                        session.saveSession(body.accessToken, body.expiresIn, ApiClient.BASE_URL, usuario)
+                        runOnUiThread { irAHome() }
                     } else {
                         runOnUiThread { mostrarError(getString(R.string.login_error_credenciales)) }
                     }
@@ -82,11 +87,11 @@ class LoginActivity : AppCompatActivity() {
 
     private fun mostrarError(mensaje: String) {
         binding.tilPassword.error = mensaje
-        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
+        ApiErrorUi.show(this, mensaje)
     }
 
-    private fun irAMain() {
-        val intent = Intent(this, MainActivity::class.java)
+    private fun irAHome() {
+        val intent = Intent(this, HomeActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()

@@ -24,28 +24,36 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".HomeActivity"
             android:exported="false" />
+        <activity
+            android:name=".OrdersActivity"
+            android:exported="false"
+            android:parentActivityName=".HomeActivity" />
         <activity
             android:name=".InventoryActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".HomeActivity" />
         <activity
             android:name=".InspectionActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".HomeActivity" />
         <activity
             android:name=".InspectionDetailActivity"
             android:exported="false"
             android:parentActivityName=".InspectionActivity" />
         <activity
+            android:name=".LabelingActivity"
+            android:exported="false"
+            android:parentActivityName=".HomeActivity" />
+        <activity
             android:name=".OrderDetailActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".OrdersActivity" />
         <activity
             android:name=".ApiLogsActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".HomeActivity" />
     </application>
 
 </manifest>

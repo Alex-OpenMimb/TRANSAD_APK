@@ -7,94 +7,46 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
 import androidx.core.view.WindowCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.transad.app.api.ApiClient
+import com.transad.app.api.ApiErrors
 import com.transad.app.api.OrdersFilterState
 import com.transad.app.api.OrdersResponse
-import com.transad.app.databinding.ActivityMainBinding
+import com.transad.app.databinding.ActivityOrdersBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.ResponseBody
 
-class MainActivity : AppCompatActivity() {
+class OrdersActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityOrdersBinding
     private lateinit var adapter: OrdersAdapter
 
-    /** Filtros del panel (fechas, placa, centro de costo). La referencia va en la barra de búsqueda. */
     private var panelFilters = OrdersFilterState()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, true)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityOrdersBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (!SessionManager(this).isLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-            return
-        }
+        if (!ensureValidSession()) return
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        val toggle = ActionBarDrawerToggle(
-            this,
-            binding.drawerLayout,
-            binding.toolbar,
-            R.string.menu_inicio,
-            R.string.menu_ordenes
-        )
-        binding.drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-
-        binding.navView.menu.findItem(R.id.nav_api_logs)?.isVisible = BuildConfig.DEBUG
-
-        binding.navView.setNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_inicio, R.id.nav_ordenes -> {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    if (item.itemId == R.id.nav_ordenes) loadOrders()
-                }
-                R.id.nav_inventario -> {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    startActivity(Intent(this, InventoryActivity::class.java))
-                }
-                R.id.nav_inspeccion -> {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    startActivity(Intent(this, InspectionActivity::class.java))
-                }
-                R.id.nav_perfil -> {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    Toast.makeText(this, "Próximamente", Toast.LENGTH_SHORT).show()
-                }
-                R.id.nav_api_logs -> {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    startActivity(Intent(this, ApiLogsActivity::class.java))
-                }
-                R.id.nav_logout -> {
-                    binding.drawerLayout.closeDrawer(GravityCompat.START)
-                    cerrarSesion()
-                }
-            }
-            true
-        }
+        binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         adapter = OrdersAdapter { order ->
-            val intent = Intent(this, OrderDetailActivity::class.java).apply {
-                putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.id)
-                putExtra(OrderDetailActivity.EXTRA_ORDER_USER_ID, order.userId)
-                putExtra(OrderDetailActivity.EXTRA_ORDER_REFERENCE, order.reference)
-                putExtra(OrderDetailActivity.EXTRA_ORDER_LICENSE_PLATE, order.licensePlateFromCostCenter())
-                putParcelableArrayListExtra(OrderDetailActivity.EXTRA_ORDER_PRODUCTS, ArrayList(order.orderProducts ?: emptyList()))
-            }
-            startActivity(intent)
+            startActivity(
+                Intent(this, OrderDetailActivity::class.java).apply {
+                    putExtra(OrderDetailActivity.EXTRA_ORDER_ID, order.id)
+                    putExtra(OrderDetailActivity.EXTRA_ORDER_USER_ID, order.userId)
+                    putExtra(OrderDetailActivity.EXTRA_ORDER_REFERENCE, order.reference)
+                    putExtra(OrderDetailActivity.EXTRA_ORDER_LICENSE_PLATE, order.licensePlateFromCostCenter())
+                }
+            )
         }
         binding.recyclerOrders.layoutManager = LinearLayoutManager(this)
         binding.recyclerOrders.adapter = adapter
@@ -103,11 +55,22 @@ class MainActivity : AppCompatActivity() {
         loadOrders()
     }
 
+    private fun ensureValidSession(): Boolean {
+        val session = SessionManager(this)
+        if (!session.isLoggedIn() || !session.isSessionForBaseUrl(ApiClient.BASE_URL)) {
+            session.logout()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return false
+        }
+        return true
+    }
+
     private fun setupOrdersSearchAndFilters() {
-        binding.tilSearchReference.setEndIconOnClickListener { performOrdersSearch() }
+        binding.tilSearchReference.setEndIconOnClickListener { loadOrders() }
         binding.etSearchReference.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                performOrdersSearch()
+                loadOrders()
                 true
             } else {
                 false
@@ -116,15 +79,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnOrdersFilter.setOnClickListener { openOrdersFilterSheet() }
         binding.chipActiveFilters.setOnClickListener { openOrdersFilterSheet() }
         binding.btnClearSearch.setOnClickListener { clearAllOrdersFilters() }
-    }
-
-    private fun performOrdersSearch() {
-        loadOrders()
-    }
-
-    private fun currentFilters(): OrdersFilterState {
-        val reference = binding.etSearchReference.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
-        return panelFilters.copy(reference = reference)
     }
 
     private fun openOrdersFilterSheet() {
@@ -153,6 +107,11 @@ class MainActivity : AppCompatActivity() {
         loadOrders()
     }
 
+    private fun currentFilters(): OrdersFilterState {
+        val reference = binding.etSearchReference.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+        return panelFilters.copy(reference = reference)
+    }
+
     private fun updateFilterIndicators() {
         val active = currentFilters().hasAnyFilter()
         binding.chipActiveFilters.visibility = if (panelFilters.hasAnyFilter()) View.VISIBLE else View.GONE
@@ -170,26 +129,6 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun cerrarSesion() {
-        ApiClient.authApi.logout().enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                irALogin()
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                irALogin()
-            }
-        })
-    }
-
-    private fun irALogin() {
-        SessionManager(this).logout()
-        startActivity(Intent(this, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        })
-        finish()
     }
 
     private fun loadOrders(showRefreshAck: Boolean = false) {
@@ -212,25 +151,21 @@ class MainActivity : AppCompatActivity() {
             costCenterId = filters.costCenterId,
             licensePlate = filters.licensePlate
         ).enqueue(object : Callback<OrdersResponse> {
-            override fun onResponse(
-                call: Call<OrdersResponse>,
-                response: Response<OrdersResponse>
-            ) {
+            override fun onResponse(call: Call<OrdersResponse>, response: Response<OrdersResponse>) {
                 binding.progressOrders.visibility = View.GONE
                 if (response.isSuccessful) {
                     val list = response.body()?.data ?: emptyList()
                     adapter.submitList(list)
                     binding.recyclerOrders.visibility = View.VISIBLE
-                    if (list.isEmpty()) {
-                        binding.tvEmpty.visibility = View.VISIBLE
-                    }
+                    if (list.isEmpty()) binding.tvEmpty.visibility = View.VISIBLE
                     if (showRefreshAck) {
-                        Toast.makeText(this@MainActivity, R.string.orders_refreshed, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@OrdersActivity, R.string.orders_refreshed, Toast.LENGTH_SHORT).show()
                     }
                 } else {
+                    val errorText = ApiErrors.formatHttpError(response, getString(R.string.orders_error))
                     binding.tvEmpty.visibility = View.VISIBLE
-                    binding.tvEmpty.text = getString(R.string.orders_error)
-                    Toast.makeText(this@MainActivity, R.string.orders_error, Toast.LENGTH_LONG).show()
+                    binding.tvEmpty.text = errorText
+                    ApiErrorUi.showHttpError(this@OrdersActivity, getString(R.string.orders_error), response)
                 }
             }
 
@@ -238,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                 binding.progressOrders.visibility = View.GONE
                 binding.tvEmpty.visibility = View.VISIBLE
                 binding.tvEmpty.text = getString(R.string.orders_error)
-                Toast.makeText(this@MainActivity, getString(R.string.orders_error) + " " + t.message, Toast.LENGTH_LONG).show()
+                ApiErrorUi.showNetworkError(this@OrdersActivity, getString(R.string.orders_error), t)
             }
         })
     }

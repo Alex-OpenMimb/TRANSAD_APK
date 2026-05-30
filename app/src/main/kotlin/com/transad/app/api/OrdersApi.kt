@@ -28,7 +28,16 @@ interface OrdersApi {
 
 interface ProductsApi {
     @GET("api/products")
-    fun getProducts(): Call<ProductsResponse>
+    fun getProducts(
+        @Query("search") search: String? = null,
+        @Query("reference") reference: String? = null,
+        @Query("product_type_id") productTypeId: Int? = null,
+        @Query("brand_id") brandId: Int? = null,
+        @Query("condition_id") conditionId: Int? = null,
+        @Query("status") status: Int? = null,
+        @Query("cost_min") costMin: String? = null,
+        @Query("cost_max") costMax: String? = null
+    ): Call<ProductsResponse>
 }
 
 interface CostCentersApi {
@@ -37,4 +46,7 @@ interface CostCentersApi {
         @Query("search") search: String? = null,
         @Query("status") status: Int? = null
     ): Call<CostCentersResponse>
+
+    @GET("api/cost-centers/{id}")
+    fun getCostCenter(@Path("id") id: Int): Call<CostCenterDetailResponse>
 }

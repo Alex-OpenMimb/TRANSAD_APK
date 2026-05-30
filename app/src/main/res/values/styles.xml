@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.Transad.NavigationView" parent="Widget.MaterialComponents.NavigationView">
+        <item name="android:background">@color/white</item>
+        <item name="itemIconPadding">16dp</item>
+        <item name="itemHorizontalPadding">20dp</item>
+        <item name="itemIconSize">24dp</item>
+        <item name="itemShapeAppearance">@style/Shape.Transad.NavItem</item>
+        <item name="itemShapeInsetStart">12dp</item>
+        <item name="itemShapeInsetEnd">12dp</item>
+        <item name="itemShapeInsetTop">2dp</item>
+        <item name="itemShapeInsetBottom">2dp</item>
+    </style>
+
+    <style name="Shape.Transad.NavItem" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+</resources>

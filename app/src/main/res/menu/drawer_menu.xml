@@ -1,31 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
-        android:id="@+id/nav_inicio"
-        android:icon="@android:drawable/ic_menu_myplaces"
-        android:title="@string/menu_inicio" />
+        android:enabled="false"
+        android:title="@string/menu_section_operaciones" />
+
+    <group
+        android:id="@+id/nav_group_main"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_inicio"
+            android:checked="true"
+            android:icon="@drawable/ic_nav_home"
+            android:title="@string/menu_inicio" />
+        <item
+            android:id="@+id/nav_ordenes"
+            android:icon="@drawable/ic_quick_orders"
+            android:title="@string/menu_ordenes" />
+        <item
+            android:id="@+id/nav_inventario"
+            android:icon="@drawable/ic_nav_inventory"
+            android:title="@string/menu_inventario" />
+        <item
+            android:id="@+id/nav_inspeccion"
+            android:icon="@drawable/ic_quick_inspection"
+            android:title="@string/menu_inspeccion" />
+        <item
+            android:id="@+id/nav_etiquetado"
+            android:icon="@drawable/ic_quick_labeling"
+            android:title="@string/menu_etiquetado" />
+    </group>
+
     <item
-        android:id="@+id/nav_ordenes"
-        android:icon="@android:drawable/ic_menu_sort_by_size"
-        android:title="@string/menu_ordenes" />
-    <item
-        android:id="@+id/nav_inventario"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="@string/menu_inventario" />
-    <item
-        android:id="@+id/nav_inspeccion"
-        android:icon="@android:drawable/ic_menu_search"
-        android:title="@string/menu_inspeccion" />
-    <item
-        android:id="@+id/nav_perfil"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="@string/menu_perfil" />
-    <item
-        android:id="@+id/nav_api_logs"
-        android:icon="@android:drawable/ic_menu_info_details"
-        android:title="@string/menu_api_logs" />
-    <item
-        android:id="@+id/nav_logout"
-        android:icon="@android:drawable/ic_lock_power_off"
-        android:title="@string/menu_logout" />
+        android:enabled="false"
+        android:title="@string/menu_section_cuenta" />
+
+    <group android:id="@+id/nav_group_account">
+        <item
+            android:id="@+id/nav_perfil"
+            android:icon="@drawable/ic_nav_profile"
+            android:title="@string/menu_perfil" />
+        <item
+            android:id="@+id/nav_api_logs"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="@string/menu_api_logs"
+            android:visible="false" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_nav_logout"
+            android:title="@string/menu_logout" />
+    </group>
 </menu>

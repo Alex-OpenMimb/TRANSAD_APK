@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.transad.app.api.ApiClient
+import com.transad.app.api.ApiErrors
 import com.transad.app.api.CostCenter
 import com.transad.app.api.CostCentersResponse
 import com.transad.app.api.OrdersFilterState
@@ -107,14 +108,22 @@ class OrdersFilterBottomSheet(
                     ) + centers.map { it.toSpinnerOption(activity) }
                     bindSpinner()
                 } else {
-                    Toast.makeText(activity, R.string.orders_cost_centers_error, Toast.LENGTH_SHORT).show()
+                    ApiErrorUi.showHttpError(
+                        activity,
+                        activity.getString(R.string.orders_cost_centers_error),
+                        response
+                    )
                 }
             }
 
             override fun onFailure(call: Call<CostCentersResponse>, t: Throwable) {
                 sheetBinding.progressCostCenters.visibility = View.GONE
                 sheetBinding.spinnerCostCenter.isEnabled = true
-                Toast.makeText(activity, R.string.orders_cost_centers_error, Toast.LENGTH_SHORT).show()
+                ApiErrorUi.showNetworkError(
+                    activity,
+                    activity.getString(R.string.orders_cost_centers_error),
+                    t
+                )
             }
         })
 

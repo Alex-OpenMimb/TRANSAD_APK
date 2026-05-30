@@ -5,12 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.transad.app.api.Order
+import com.transad.app.api.OrderListItem
 import com.transad.app.databinding.ItemOrderBinding
 
 class OrdersAdapter(
-    private val onOrderClick: (Order) -> Unit
-) : ListAdapter<Order, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
+    private val onOrderClick: (OrderListItem) -> Unit
+) : ListAdapter<OrderListItem, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
         val binding = ItemOrderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -22,7 +22,7 @@ class OrdersAdapter(
     }
 
     class OrderViewHolder(private val binding: ItemOrderBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(order: Order, onOrderClick: (Order) -> Unit) {
+        fun bind(order: OrderListItem, onOrderClick: (OrderListItem) -> Unit) {
             binding.root.setOnClickListener { onOrderClick(order) }
             binding.tvOrderReference.text = order.reference
             binding.tvOrderType.text = order.typeOrder
@@ -43,8 +43,8 @@ class OrdersAdapter(
         }
     }
 
-    private class OrderDiffCallback : DiffUtil.ItemCallback<Order>() {
-        override fun areItemsTheSame(old: Order, new: Order) = old.id == new.id
-        override fun areContentsTheSame(old: Order, new: Order) = old == new
+    private class OrderDiffCallback : DiffUtil.ItemCallback<OrderListItem>() {
+        override fun areItemsTheSame(old: OrderListItem, new: OrderListItem) = old.id == new.id
+        override fun areContentsTheSame(old: OrderListItem, new: OrderListItem) = old == new
     }
 }
