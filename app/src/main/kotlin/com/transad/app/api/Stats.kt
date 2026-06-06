@@ -24,7 +24,12 @@ data class ActiveInactiveStats(
 
 data class OrdersStats(
     @SerializedName("total") val total: Int = 0,
-    @SerializedName("by_status") val byStatus: List<Any>? = null
+    @SerializedName("by_status") val byStatus: Map<String, OrderStatusCount>? = null
+)
+
+data class OrderStatusCount(
+    @SerializedName("label") val label: String = "",
+    @SerializedName("total") val total: Int = 0
 )
 
 data class TiresStats(

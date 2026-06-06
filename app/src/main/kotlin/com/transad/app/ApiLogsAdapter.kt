@@ -88,16 +88,36 @@ class ApiLogsAdapter : ListAdapter<ApiLogListItem, RecyclerView.ViewHolder>(Diff
             }
             binding.chipStatus.setChipBackgroundColorResource(statusColor)
 
-            binding.tvError.isVisible = !entry.errorMessage.isNullOrBlank()
-            binding.tvError.text = entry.errorMessage
+            val expanded = item.expanded
+            binding.detailContent.isVisible = expanded
+            binding.tvExpandHint.text = if (expanded) {
+                ctx.getString(R.string.api_logs_hide_detail)
+            } else {
+                ctx.getString(R.string.api_logs_tap_detail)
+            }
 
-            val showBody = entry.isError() && !entry.requestBody.isNullOrBlank()
-            binding.tvRequestBodyLabel.isVisible = showBody
-            binding.tvRequestBody.isVisible = showBody
+            binding.tvUrl.text = entry.url
+
+            val headers = entry.formattedRequestHeaders()
+            val showHeaders = expanded && !headers.isNullOrBlank()
+            binding.tvRequestHeadersLabel.isVisible = showHeaders
+            binding.tvRequestHeaders.isVisible = showHeaders
+            binding.tvRequestHeaders.text = headers
+
+            val showRequestBody = expanded && !entry.requestBody.isNullOrBlank()
+            binding.tvRequestBodyLabel.isVisible = showRequestBody
+            binding.tvRequestBody.isVisible = showRequestBody
             binding.tvRequestBody.text = entry.requestBody
 
-            binding.tvUrl.isVisible = item.expanded
-            binding.tvUrl.text = entry.url
+            val showResponseBody = expanded && !entry.responseBody.isNullOrBlank()
+            binding.tvResponseBodyLabel.isVisible = showResponseBody
+            binding.tvResponseBody.isVisible = showResponseBody
+            binding.tvResponseBody.text = entry.responseBody
+
+            val showError = expanded && !entry.errorMessage.isNullOrBlank()
+            binding.tvErrorLabel.isVisible = showError
+            binding.tvError.isVisible = showError
+            binding.tvError.text = entry.errorMessage
 
             binding.root.setOnClickListener {
                 onEntryClick?.invoke(entry)

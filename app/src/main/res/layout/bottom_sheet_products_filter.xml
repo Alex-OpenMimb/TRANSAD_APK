@@ -51,10 +51,11 @@
             android:hint="@string/products_filter_product_type"
             android:visibility="gone">
 
-            <AutoCompleteTextView
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/actFilterProductType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="false"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -67,10 +68,11 @@
             android:hint="@string/products_filter_brand"
             android:visibility="gone">
 
-            <AutoCompleteTextView
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/actFilterBrand"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="false"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -83,10 +85,11 @@
             android:hint="@string/products_filter_condition"
             android:visibility="gone">
 
-            <AutoCompleteTextView
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/actFilterCondition"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="false"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 

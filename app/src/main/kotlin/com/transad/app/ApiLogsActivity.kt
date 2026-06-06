@@ -9,10 +9,8 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.transad.app.api.ApiLogFile
+import com.transad.app.api.ApiLogTimeFormat
 import com.transad.app.databinding.ActivityApiLogsBinding
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /** Pantalla de desarrollo: tráfico HTTP agrupado por sección. */
 class ApiLogsActivity : AppCompatActivity() {
@@ -72,7 +70,7 @@ class ApiLogsActivity : AppCompatActivity() {
         binding.tvStatLast.text = stats.lastTimestamp?.let { ts ->
             getString(
                 R.string.api_logs_stat_last,
-                SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(ts))
+                ApiLogTimeFormat.formatForList(ts)
             )
         } ?: getString(R.string.api_logs_stat_last, "—")
     }

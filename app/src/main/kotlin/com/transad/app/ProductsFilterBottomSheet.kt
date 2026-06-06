@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import androidx.core.view.isVisible
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.transad.app.api.ApiClient
 import com.transad.app.api.FilterBrand
 import com.transad.app.api.FilterCondition
@@ -18,10 +19,13 @@ import retrofit2.Response
 class ProductsFilterBottomSheet(
     private val activity: LabelingActivity,
     private val initial: ProductsFilterState,
+    private val preloadedProductTypes: List<FilterProductType> = emptyList(),
     private val onApply: (ProductsFilterState) -> Unit,
     private val onClear: () -> Unit
 ) {
     fun show() {
+        if (activity.isFinishing || activity.isDestroyed) return
+
         val dialog = BottomSheetDialog(activity)
         val sheetBinding = BottomSheetProductsFilterBinding.inflate(LayoutInflater.from(activity))
         dialog.setContentView(sheetBinding.root)
@@ -36,7 +40,7 @@ class ProductsFilterBottomSheet(
             else -> sheetBinding.radioStatusAll.isChecked = true
         }
 
-        var productTypes = emptyList<FilterProductType>()
+        var productTypes = preloadedProductTypes
         var brands = emptyList<FilterBrand>()
         var conditions = emptyList<FilterCondition>()
 
@@ -56,16 +60,17 @@ class ProductsFilterBottomSheet(
         }
 
         fun bindDropdown(
-            act: android.widget.AutoCompleteTextView,
+            act: MaterialAutoCompleteTextView,
             labels: List<String>,
             ids: List<Int?>,
             selectedId: Int?,
             onSelected: (Int?) -> Unit
         ) {
-            val adapter = ArrayAdapter(activity, android.R.layout.simple_dropdown_item_1line, labels)
+            if (labels.isEmpty()) return
+            val adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, labels)
             act.setAdapter(adapter)
-            val index = ids.indexOfFirst { it == selectedId }.coerceAtLeast(0)
-            act.setText(labels.getOrElse(index) { labels.first() }, false)
+            val index = ids.indexOfFirst { it == selectedId }.let { if (it >= 0) it else 0 }
+            act.setText(labels[index], false)
             act.setOnItemClickListener { _, _, position, _ ->
                 onSelected(ids.getOrNull(position))
             }
@@ -94,39 +99,54 @@ class ProductsFilterBottomSheet(
             }
         }
 
-        var typesLoaded = false
+        var typesLoaded = productTypes.isNotEmpty()
         var brandsLoaded = false
         var conditionsLoaded = false
 
         fun tryShowForm() {
-            if (typesLoaded && brandsLoaded && conditionsLoaded) {
+            if (!typesLoaded || !brandsLoaded || !conditionsLoaded) return
+            activity.runOnUiThread {
+                if (activity.isFinishing || activity.isDestroyed || !dialog.isShowing) return@runOnUiThread
                 bindAllDropdowns()
                 showForm()
             }
         }
 
-        ApiClient.filtersApi.getProductTypes().enqueue(object : Callback<com.google.gson.JsonElement> {
-            override fun onResponse(
-                call: Call<com.google.gson.JsonElement>,
-                response: Response<com.google.gson.JsonElement>
-            ) {
-                productTypes = if (response.isSuccessful) parseFilterJsonList(response.body()) else emptyList()
-                typesLoaded = true
-                tryShowForm()
-            }
+        fun safeParseList(body: com.google.gson.JsonElement?): List<FilterProductType> =
+            runCatching { parseFilterJsonList<FilterProductType>(body) }.getOrDefault(emptyList())
 
-            override fun onFailure(call: Call<com.google.gson.JsonElement>, t: Throwable) {
-                typesLoaded = true
-                tryShowForm()
-            }
-        })
+        fun safeParseBrands(body: com.google.gson.JsonElement?): List<FilterBrand> =
+            runCatching { parseFilterJsonList<FilterBrand>(body) }.getOrDefault(emptyList())
+
+        fun safeParseConditions(body: com.google.gson.JsonElement?): List<FilterCondition> =
+            runCatching { parseFilterJsonList<FilterCondition>(body) }.getOrDefault(emptyList())
+
+        if (typesLoaded) {
+            // Ya cargados en LabelingActivity
+        } else {
+            ApiClient.filtersApi.getProductTypes().enqueue(object : Callback<com.google.gson.JsonElement> {
+                override fun onResponse(
+                    call: Call<com.google.gson.JsonElement>,
+                    response: Response<com.google.gson.JsonElement>
+                ) {
+                    productTypes = if (response.isSuccessful) safeParseList(response.body()) else emptyList()
+                    typesLoaded = true
+                    tryShowForm()
+                }
+
+                override fun onFailure(call: Call<com.google.gson.JsonElement>, t: Throwable) {
+                    typesLoaded = true
+                    tryShowForm()
+                }
+            })
+        }
 
         ApiClient.filtersApi.getBrands().enqueue(object : Callback<com.google.gson.JsonElement> {
             override fun onResponse(
                 call: Call<com.google.gson.JsonElement>,
                 response: Response<com.google.gson.JsonElement>
             ) {
-                brands = if (response.isSuccessful) parseFilterJsonList(response.body()) else emptyList()
+                brands = if (response.isSuccessful) safeParseBrands(response.body()) else emptyList()
                 brandsLoaded = true
                 tryShowForm()
             }
@@ -142,7 +162,7 @@ class ProductsFilterBottomSheet(
                 call: Call<com.google.gson.JsonElement>,
                 response: Response<com.google.gson.JsonElement>
             ) {
-                conditions = if (response.isSuccessful) parseFilterJsonList(response.body()) else emptyList()
+                conditions = if (response.isSuccessful) safeParseConditions(response.body()) else emptyList()
                 conditionsLoaded = true
                 tryShowForm()
             }
@@ -179,5 +199,9 @@ class ProductsFilterBottomSheet(
         }
 
         dialog.show()
+
+        if (typesLoaded) {
+            tryShowForm()
+        }
     }
 }

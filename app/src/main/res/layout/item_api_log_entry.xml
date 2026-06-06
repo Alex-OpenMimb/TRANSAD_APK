@@ -67,7 +67,7 @@
                 android:layout_weight="1"
                 android:textColor="?android:attr/textColorSecondary"
                 android:textSize="12sp"
-                tools:text="14:32:01.204" />
+                tools:text="06/06/2025 14:55:36" />
 
             <TextView
                 android:id="@+id/tvDuration"
@@ -79,52 +79,143 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tvUrl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:fontFamily="monospace"
-            android:textIsSelectable="true"
-            android:textSize="11sp"
-            android:visibility="gone"
-            tools:text="http://192.168.80.23:8000/api/orders/12"
-            tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/tvError"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/status_inactive"
-            android:textSize="12sp"
-            android:visibility="gone"
-            tools:text="timeout"
-            tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/tvRequestBodyLabel"
+            android:id="@+id/tvExpandHint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/api_logs_request_body_label"
+            android:text="@string/api_logs_tap_detail"
             android:textColor="@color/transad_primary"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:textSize="11sp" />
 
-        <TextView
-            android:id="@+id/tvRequestBody"
+        <LinearLayout
+            android:id="@+id/detailContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="#F5F8FA"
-            android:fontFamily="monospace"
-            android:padding="8dp"
-            android:textIsSelectable="true"
-            android:textSize="11sp"
+            android:orientation="vertical"
             android:visibility="gone"
-            tools:text="{&quot;tire_id&quot;: 12, &quot;status&quot;: &quot;ok&quot;}"
-            tools:visibility="visible" />
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/tvUrlLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/api_logs_url_label"
+                android:textColor="@color/transad_primary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="monospace"
+                android:textIsSelectable="true"
+                android:textSize="11sp"
+                tools:text="http://192.168.80.23:8000/api/orders/12" />
+
+            <TextView
+                android:id="@+id/tvRequestHeadersLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/api_logs_request_headers_label"
+                android:textColor="@color/transad_primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvRequestHeaders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#F5F8FA"
+                android:fontFamily="monospace"
+                android:padding="8dp"
+                android:textIsSelectable="true"
+                android:textSize="11sp"
+                android:visibility="gone"
+                tools:text="Authorization: Bearer eyJ..."
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvRequestBodyLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/api_logs_request_body_label"
+                android:textColor="@color/transad_primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvRequestBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#F5F8FA"
+                android:fontFamily="monospace"
+                android:padding="8dp"
+                android:textIsSelectable="true"
+                android:textSize="11sp"
+                android:visibility="gone"
+                tools:text="{&quot;tire_id&quot;: 12}"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvResponseBodyLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/api_logs_response_body_label"
+                android:textColor="@color/transad_primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvResponseBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="#F0F7FA"
+                android:fontFamily="monospace"
+                android:padding="8dp"
+                android:textIsSelectable="true"
+                android:textSize="11sp"
+                android:visibility="gone"
+                tools:text="{&quot;message&quot;: &quot;Unauthenticated.&quot;}"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvErrorLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/api_logs_error_label"
+                android:textColor="@color/status_inactive"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/status_inactive"
+                android:textIsSelectable="true"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="timeout"
+                tools:visibility="visible" />
+        </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

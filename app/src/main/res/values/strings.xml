@@ -101,6 +101,8 @@
     <string name="menu_section_operaciones">Operaciones</string>
     <string name="menu_ordenes">Órdenes</string>
     <string name="home_title">Inicio</string>
+    <string name="home_refresh">Actualizar inicio</string>
+    <string name="home_refreshed">Inicio actualizado</string>
     <string name="home_subtitle">Gestión de llantas y operaciones</string>
     <string name="home_welcome">Hola, %1$s</string>
     <string name="home_user_label">Tu perfil</string>
@@ -191,6 +193,8 @@
     <string name="menu_inventario">Inventario</string>
     <string name="menu_inspeccion">Inspección</string>
     <string name="inspection_title">Inspección</string>
+    <string name="inspection_guide_title">¿Cómo inspeccionar?</string>
+    <string name="inspection_guide_steps">Selecciona el vehículo de la lista. Luego escanea la etiqueta RFID de la llanta y registra la inspección con los atributos solicitados.</string>
     <string name="inspection_empty">No hay centros de costo</string>
     <string name="inspection_error">Error al cargar centros de costo</string>
     <string name="inspection_refresh">Actualizar inspección</string>
@@ -287,6 +291,12 @@
     <string name="api_logs_duration_ms">%1$d ms</string>
     <string name="api_logs_filter_all">Todas</string>
     <string name="api_logs_request_body_label">Body enviado</string>
+    <string name="api_logs_request_headers_label">Headers enviados</string>
+    <string name="api_logs_response_body_label">Respuesta</string>
+    <string name="api_logs_url_label">URL</string>
+    <string name="api_logs_error_label">Error de red</string>
+    <string name="api_logs_tap_detail">Toca para ver detalle</string>
+    <string name="api_logs_hide_detail">Toca para ocultar detalle</string>
     <plurals name="api_logs_error_count">
         <item quantity="one">%d error</item>
         <item quantity="other">%d errores</item>

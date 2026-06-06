@@ -1,6 +1,5 @@
 package com.transad.app.api
 
-import android.util.Log
 import com.transad.app.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.Request
@@ -9,7 +8,7 @@ import okhttp3.Response
 import okio.Buffer
 import java.nio.charset.Charset
 
-/** Registra cada llamada HTTP con método, URL, código, duración y sección. */
+/** Registra cada llamada HTTP con request/response completos (solo debug). */
 class ApiTrafficInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -29,15 +28,17 @@ class ApiTrafficInterceptor : Interceptor {
             throw t
         } finally {
             val durationMs = (System.nanoTime() - startNs) / 1_000_000L
+            val responseBodySnapshot = response?.let { snapshotResponseBody(it) }
             val entry = ApiLogEntry.create(
                 request = request,
                 response = response,
                 error = error,
                 durationMs = durationMs,
-                requestBodySnapshot = requestBodySnapshot
+                requestBodySnapshot = requestBodySnapshot,
+                responseBodySnapshot = responseBodySnapshot
             )
             ApiLogFile.appendEntry(entry)
-            Log.d(API_LOG_TAG, entry.toLogcatLine())
+            entry.logToLogcat(API_LOG_TAG)
         }
     }
 
@@ -58,6 +59,15 @@ class ApiTrafficInterceptor : Interceptor {
         }
     }
 
+    private fun snapshotResponseBody(response: Response): String? {
+        return try {
+            val peeked = response.peekBody(MAX_BODY_BYTES.toLong())
+            truncateBody(peeked.string())
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun truncateBody(text: String): String {
         if (text.length <= MAX_BODY_CHARS) return text
         return text.take(MAX_BODY_CHARS) + "\n… (truncado, ${text.length} chars total)"
@@ -65,6 +75,7 @@ class ApiTrafficInterceptor : Interceptor {
 
     companion object {
         private const val API_LOG_TAG = "TRANSAD_API"
-        private const val MAX_BODY_CHARS = 8_192
+        private const val MAX_BODY_CHARS = 16_384
+        private const val MAX_BODY_BYTES = 256 * 1024L
     }
 }

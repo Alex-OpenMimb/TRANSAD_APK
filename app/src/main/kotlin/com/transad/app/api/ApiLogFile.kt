@@ -5,9 +5,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.transad.app.BuildConfig
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * Persiste entradas estructuradas de tráfico HTTP (JSONL, solo debug).
@@ -15,13 +12,12 @@ import java.util.Locale
  */
 object ApiLogFile {
 
-    private const val MAX_BYTES = 2 * 1024 * 1024
+    private const val MAX_BYTES = 5 * 1024 * 1024
     private const val MAX_ENTRIES = 500
 
     private var logFile: File? = null
     private val lock = Any()
     private val gson = Gson()
-    private val timestampFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
     fun init(context: Context) {
         if (!BuildConfig.DEBUG) return
@@ -77,7 +73,7 @@ object ApiLogFile {
 
         return buildString {
             appendLine("=== TRANSAD API Log ===")
-            appendLine("Exportado: ${timestampFormat.format(Date())}")
+            appendLine("Exportado: ${ApiLogTimeFormat.formatForExport(System.currentTimeMillis())} (Colombia)")
             appendLine("Total: ${sorted.size} llamadas · Errores: ${sorted.count { it.isError() }}")
             appendLine()
 
@@ -127,17 +123,26 @@ object ApiLogFile {
     }
 
     private fun ApiLogEntry.toExportLine(): String {
-        val time = timestampFormat.format(Date(timestamp))
+        val time = ApiLogTimeFormat.formatForExport(timestamp)
         val status = statusLabel()
         val err = errorMessage?.let { " · $it" }.orEmpty()
         return buildString {
             append("$time  ${method.padEnd(6)} $status  ${durationMs}ms  $path$err\n")
-            append("           $url")
+            append("           URL: $url\n")
+            formattedRequestHeaders()?.let { headers ->
+                append("           Headers:\n")
+                headers.lines().forEach { line -> append("             $line\n") }
+            }
             if (!requestBody.isNullOrBlank()) {
-                append("\n           Body enviado:\n")
-                requestBody.lines().forEach { line ->
-                    append("             $line\n")
-                }
+                append("           Body enviado:\n")
+                requestBody.lines().forEach { line -> append("             $line\n") }
+            }
+            if (!responseBody.isNullOrBlank()) {
+                append("           Respuesta:\n")
+                responseBody.lines().forEach { line -> append("             $line\n") }
+            }
+            if (!errorMessage.isNullOrBlank()) {
+                append("           Error: $errorMessage\n")
             }
         }.trimEnd()
     }

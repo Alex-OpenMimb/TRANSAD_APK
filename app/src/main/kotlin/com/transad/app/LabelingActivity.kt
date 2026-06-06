@@ -210,6 +210,7 @@ class LabelingActivity : AppCompatActivity() {
         ProductsFilterBottomSheet(
             activity = this,
             initial = panelFilters,
+            preloadedProductTypes = productTypes,
             onApply = { filters ->
                 panelFilters = filters
                 loadProducts()

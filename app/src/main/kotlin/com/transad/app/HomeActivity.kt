@@ -3,6 +3,8 @@ package com.transad.app
 import android.widget.TextView
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -23,6 +25,7 @@ import retrofit2.Response
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
+    private var refreshAckPending = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +92,33 @@ class HomeActivity : AppCompatActivity() {
         setupQuickActions()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_home, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_refresh_home) {
+            refreshHome()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun refreshHome() {
+        refreshAckPending = 2
+        loadUserProfile(showRefreshAck = true)
+        loadBusinessStats(showRefreshAck = true)
+    }
+
+    private fun onRefreshLoadFinished(showRefreshAck: Boolean) {
+        if (!showRefreshAck) return
+        refreshAckPending--
+        if (refreshAckPending <= 0) {
+            Toast.makeText(this, R.string.home_refreshed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun bindUserInfoFallback() {
         val username = SessionManager(this).getUsername().ifBlank { getString(R.string.home_user_guest) }
         binding.tvHomeWelcome.text = getString(R.string.home_welcome, username)
@@ -106,7 +136,7 @@ class HomeActivity : AppCompatActivity() {
             if (email.isBlank()) View.GONE else View.VISIBLE
     }
 
-    private fun loadUserProfile() {
+    private fun loadUserProfile(showRefreshAck: Boolean = false) {
         binding.progressUserProfile.visibility = View.VISIBLE
         binding.userProfileContent.alpha = 0.45f
 
@@ -124,6 +154,7 @@ class HomeActivity : AppCompatActivity() {
                         response
                     )
                 }
+                onRefreshLoadFinished(showRefreshAck)
             }
 
             override fun onFailure(call: Call<MeResponse>, t: Throwable) {
@@ -134,6 +165,7 @@ class HomeActivity : AppCompatActivity() {
                     getString(R.string.home_profile_error),
                     t
                 )
+                onRefreshLoadFinished(showRefreshAck)
             }
         })
     }
@@ -192,7 +224,7 @@ class HomeActivity : AppCompatActivity() {
         bindNavDrawerUser(user.displayName(), user.email)
     }
 
-    private fun loadBusinessStats() {
+    private fun loadBusinessStats(showRefreshAck: Boolean = false) {
         binding.progressHomeStats.visibility = View.VISIBLE
         binding.statsContent.alpha = 0.45f
 
@@ -209,6 +241,7 @@ class HomeActivity : AppCompatActivity() {
                         response
                     )
                 }
+                onRefreshLoadFinished(showRefreshAck)
             }
 
             override fun onFailure(call: Call<StatsResponse>, t: Throwable) {
@@ -219,6 +252,7 @@ class HomeActivity : AppCompatActivity() {
                     getString(R.string.home_stats_error),
                     t
                 )
+                onRefreshLoadFinished(showRefreshAck)
             }
         })
     }
