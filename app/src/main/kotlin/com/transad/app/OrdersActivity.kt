@@ -14,6 +14,7 @@ import com.transad.app.api.ApiClient
 import com.transad.app.api.ApiErrors
 import com.transad.app.api.OrdersFilterState
 import com.transad.app.api.OrdersResponse
+import com.transad.app.api.enqueueWithRetry
 import com.transad.app.databinding.ActivityOrdersBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -150,7 +151,7 @@ class OrdersActivity : AppCompatActivity() {
             dateTo = filters.dateTo,
             costCenterId = filters.costCenterId,
             licensePlate = filters.licensePlate
-        ).enqueue(object : Callback<OrdersResponse> {
+        ).enqueueWithRetry(callback = object : Callback<OrdersResponse> {
             override fun onResponse(call: Call<OrdersResponse>, response: Response<OrdersResponse>) {
                 binding.progressOrders.visibility = View.GONE
                 if (response.isSuccessful) {

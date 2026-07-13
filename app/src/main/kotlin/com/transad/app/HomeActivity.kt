@@ -2,17 +2,28 @@ package com.transad.app
 
 import android.widget.TextView
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.WindowCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.transad.app.api.ApiClient
+import com.transad.app.api.AppVersionInfo
+import com.transad.app.api.AppVersionResponse
+import com.transad.app.api.Business
+import com.transad.app.api.BusinessesResponse
 import com.transad.app.api.BusinessStats
+import com.transad.app.api.SelectBusinessRequest
+import com.transad.app.api.SelectBusinessResponse
 import com.transad.app.api.StatsResponse
 import com.transad.app.api.User
 import com.transad.app.api.MeResponse
@@ -27,6 +38,17 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private var refreshAckPending = 0
 
+    private var apkUpdateInstaller: ApkUpdateInstaller? = null
+    private var pendingUpdateVersion: AppVersionInfo? = null
+
+    private val installPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()) {
+            pendingUpdateVersion?.let(::beginUpdateDownload)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -34,6 +56,8 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if (!ensureValidSession()) return
+
+        checkForAppUpdate()
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -70,6 +94,10 @@ class HomeActivity : AppCompatActivity() {
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     startActivity(Intent(this, LabelingActivity::class.java))
                 }
+                R.id.nav_cambiar_empresa -> {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    showBusinessSelectorDialog()
+                }
                 R.id.nav_perfil -> {
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                     Toast.makeText(this, R.string.coming_soon, Toast.LENGTH_SHORT).show()
@@ -89,7 +117,82 @@ class HomeActivity : AppCompatActivity() {
         bindUserInfoFallback()
         loadUserProfile()
         loadBusinessStats()
+        loadAvailableBusinesses()
         setupQuickActions()
+    }
+
+    /** Solo tiene sentido mostrar el selector si el usuario tiene acceso a más de una empresa. */
+    private fun loadAvailableBusinesses() {
+        ApiClient.authApi.getBusinesses().enqueue(object : Callback<BusinessesResponse> {
+            override fun onResponse(call: Call<BusinessesResponse>, response: Response<BusinessesResponse>) {
+                val businesses = response.takeIf { it.isSuccessful }?.body()?.data.orEmpty()
+                binding.navView.menu.findItem(R.id.nav_cambiar_empresa)?.isVisible = businesses.size > 1
+            }
+
+            override fun onFailure(call: Call<BusinessesResponse>, t: Throwable) = Unit
+        })
+    }
+
+    private fun showBusinessSelectorDialog() {
+        ApiClient.authApi.getBusinesses().enqueue(object : Callback<BusinessesResponse> {
+            override fun onResponse(call: Call<BusinessesResponse>, response: Response<BusinessesResponse>) {
+                if (!response.isSuccessful) {
+                    ApiErrorUi.showHttpError(this@HomeActivity, getString(R.string.business_load_error), response)
+                    return
+                }
+                val businesses = response.body()?.data.orEmpty()
+                if (businesses.size <= 1) return
+                renderBusinessSelectorDialog(businesses)
+            }
+
+            override fun onFailure(call: Call<BusinessesResponse>, t: Throwable) {
+                ApiErrorUi.showNetworkError(this@HomeActivity, getString(R.string.business_load_error), t)
+            }
+        })
+    }
+
+    private fun renderBusinessSelectorDialog(businesses: List<Business>) {
+        val labels = businesses.map { business ->
+            business.nit?.trim()?.takeIf { it.isNotEmpty() }?.let { "${business.name} ($it)" } ?: business.name
+        }.toTypedArray()
+        val checkedIndex = businesses.indexOfFirst { it.isCurrent }.coerceAtLeast(0)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.business_selector_title)
+            .setSingleChoiceItems(labels, checkedIndex) { dialog, which ->
+                dialog.dismiss()
+                val selected = businesses[which]
+                if (!selected.isCurrent) selectBusiness(selected)
+            }
+            .setNegativeButton(R.string.rfid_detail_cancel, null)
+            .show()
+    }
+
+    private fun selectBusiness(business: Business) {
+        ApiClient.authApi.selectBusiness(SelectBusinessRequest(businessId = business.id))
+            .enqueue(object : Callback<SelectBusinessResponse> {
+                override fun onResponse(call: Call<SelectBusinessResponse>, response: Response<SelectBusinessResponse>) {
+                    if (!response.isSuccessful) {
+                        ApiErrorUi.showHttpError(this@HomeActivity, getString(R.string.business_select_error), response)
+                        return
+                    }
+                    Toast.makeText(
+                        this@HomeActivity,
+                        getString(R.string.business_select_ok, business.name),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    recreate()
+                }
+
+                override fun onFailure(call: Call<SelectBusinessResponse>, t: Throwable) {
+                    ApiErrorUi.showNetworkError(this@HomeActivity, getString(R.string.business_select_error), t)
+                }
+            })
+    }
+
+    override fun onDestroy() {
+        apkUpdateInstaller?.unregister()
+        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -134,6 +237,11 @@ class HomeActivity : AppCompatActivity() {
         header.findViewById<TextView>(R.id.tvNavUserEmail).text = email
         header.findViewById<TextView>(R.id.tvNavUserEmail).visibility =
             if (email.isBlank()) View.GONE else View.VISIBLE
+        header.findViewById<TextView>(R.id.tvNavAppVersion).text = getString(
+            R.string.nav_app_version_format,
+            BuildConfig.VERSION_NAME,
+            BuildConfig.VERSION_CODE
+        )
     }
 
     private fun loadUserProfile(showRefreshAck: Boolean = false) {
@@ -359,6 +467,53 @@ class HomeActivity : AppCompatActivity() {
         card.tvQuickTitle.text = title
         card.tvQuickSubtitle.text = subtitle
         card.root.setOnClickListener { onClick() }
+    }
+
+    /** Consulta si hay una versión más nueva del .apk publicada; falla en silencio (no interrumpe el inicio). */
+    private fun checkForAppUpdate() {
+        ApiClient.appVersionApi.getLatestVersion().enqueue(object : Callback<AppVersionResponse> {
+            override fun onResponse(call: Call<AppVersionResponse>, response: Response<AppVersionResponse>) {
+                val info = response.takeIf { it.isSuccessful }?.body()?.data ?: return
+                if (info.versionCode <= BuildConfig.VERSION_CODE) return
+                if (!info.isMandatory && AppUpdatePreferences(this@HomeActivity).isDismissed(info.versionCode)) return
+                showUpdateDialog(info)
+            }
+
+            override fun onFailure(call: Call<AppVersionResponse>, t: Throwable) = Unit
+        })
+    }
+
+    private fun showUpdateDialog(info: AppVersionInfo) {
+        val changelog = info.changelog?.trim().orEmpty().ifBlank { getString(R.string.app_update_no_changelog) }
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.app_update_dialog_title)
+            .setMessage(getString(R.string.app_update_dialog_message, info.versionName, changelog))
+            .setCancelable(!info.isMandatory)
+            .setPositiveButton(R.string.app_update_action_update) { _, _ -> requestInstallPermissionThenDownload(info) }
+
+        if (!info.isMandatory) {
+            dialog.setNegativeButton(R.string.app_update_action_later) { _, _ ->
+                AppUpdatePreferences(this).dismiss(info.versionCode)
+            }
+        }
+        dialog.show()
+    }
+
+    private fun requestInstallPermissionThenDownload(info: AppVersionInfo) {
+        pendingUpdateVersion = info
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+            Toast.makeText(this, R.string.app_update_install_permission_message, Toast.LENGTH_LONG).show()
+            installPermissionLauncher.launch(
+                Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
+            )
+            return
+        }
+        beginUpdateDownload(info)
+    }
+
+    private fun beginUpdateDownload(info: AppVersionInfo) {
+        Toast.makeText(this, R.string.app_update_downloading, Toast.LENGTH_SHORT).show()
+        apkUpdateInstaller = ApkUpdateInstaller(this).also { it.startDownload(info) }
     }
 
     private fun ensureValidSession(): Boolean {

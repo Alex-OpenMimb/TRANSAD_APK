@@ -2,15 +2,15 @@ package com.transad.app.api
 
 import android.content.Context
 import com.transad.app.SessionManager
+import okhttp3.ConnectionPool
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    const val BASE_URL = "https://staging.tires.transadsas-group.com/"
+    const val BASE_URL = "http://192.168.80.23:8000"
 
     private var appContext: Context? = null
 
@@ -30,12 +30,20 @@ object ApiClient {
 
     private val trafficInterceptor by lazy { createApiTrafficInterceptor() }
 
+    private val reliableBodyInterceptor = ReliableResponseBodyInterceptor()
+
     private val okHttp: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            // El backend local (`php artisan serve`) siempre cierra la conexión
+            // (`Connection: close`). Si OkHttp reutiliza una conexión del pool
+            // justo cuando el servidor ya la cerró, la lectura del body falla con
+            // "unexpected end of stream". Forzamos una conexión nueva por request.
+            .connectionPool(ConnectionPool(0, 1, TimeUnit.NANOSECONDS))
             .addInterceptor(apiInterceptor)
             .addInterceptor(trafficInterceptor)
+            .addInterceptor(reliableBodyInterceptor)
             .build()
     }
 
@@ -43,7 +51,7 @@ object ApiClient {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttp)
-            .addConverterFactory(GsonConverterFactory.create(ApiGson.instance))
+            .addConverterFactory(ApiJsonConverterFactory.create(ApiGson.instance))
             .build()
     }
 
@@ -55,4 +63,5 @@ object ApiClient {
     val inspectionsApi: InspectionsApi get() = retrofit.create(InspectionsApi::class.java)
     val labelingApi: LabelingApi get() = retrofit.create(LabelingApi::class.java)
     val filtersApi: FiltersApi get() = retrofit.create(FiltersApi::class.java)
+    val appVersionApi: AppVersionApi get() = retrofit.create(AppVersionApi::class.java)
 }

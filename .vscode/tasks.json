@@ -2,8 +2,30 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Android: levantar emulador e instalar app",
-      "detail": "Usar una vez (o cuando el emulador esté cerrado)",
+      "label": "Compilar e instalar la app",
+      "detail": "Compila e instala en emulador o dispositivo (debe estar conectado). Atajo: Ctrl+Shift+B",
+      "type": "shell",
+      "command": ".\\gradlew.bat",
+      "args": ["installDebug"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "JAVA_HOME": "${env:JAVA_HOME}"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Levantar emulador e instalar app",
+      "detail": "Primera vez o cuando el emulador está apagado",
       "type": "shell",
       "command": "powershell",
       "args": [
@@ -19,28 +41,6 @@
           "WORKSPACE_FOLDER": "${workspaceFolder}"
         }
       },
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Android: instalar en emulador/dispositivo",
-      "detail": "Solo compila e instala (emulador ya abierto). Usar después de cada cambio.",
-      "type": "shell",
-      "command": ".\\gradlew.bat",
-      "args": ["installDebug"],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "JAVA_HOME": "${env:JAVA_HOME}"
-        }
-      },
       "group": "build",
       "presentation": {
         "reveal": "always",
@@ -49,7 +49,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Android: compilar APK debug",
+      "label": "Compilar APK debug",
       "type": "shell",
       "command": ".\\gradlew.bat",
       "args": ["assembleDebug"],
@@ -64,18 +64,44 @@
       "problemMatcher": []
     },
     {
-      "label": "Android: ver logcat (crash de la app)",
-      "detail": "Abre la app en el emulador y mira aquí el error si se cierra.",
+      "label": "Ver logcat (crash de la app)",
+      "detail": "Abre la app en el emulador y mira aquí el error si se cierra",
       "type": "shell",
       "command": "${env:LOCALAPPDATA}\\Android\\Sdk\\platform-tools\\adb.exe",
       "args": ["logcat", "-s", "AndroidRuntime:E", "*:E"],
-      "options": { "cwd": "${workspaceFolder}" },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "group": "none",
-      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
       "problemMatcher": []
     },
     {
-      "label": "Android: limpiar proyecto",
+      "label": "Ver logs API",
+      "detail": "Logcat de peticiones HTTP (TRANSAD_API)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\scripts\\ver-logs-api.ps1"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Limpiar proyecto",
       "type": "shell",
       "command": ".\\gradlew.bat",
       "args": ["clean"],

@@ -37,6 +37,11 @@
 
     <group android:id="@+id/nav_group_account">
         <item
+            android:id="@+id/nav_cambiar_empresa"
+            android:icon="@drawable/ic_nav_business"
+            android:title="@string/menu_cambiar_empresa"
+            android:visible="false" />
+        <item
             android:id="@+id/nav_perfil"
             android:icon="@drawable/ic_nav_profile"
             android:title="@string/menu_perfil" />

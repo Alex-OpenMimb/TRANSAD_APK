@@ -14,6 +14,7 @@ import com.transad.app.api.ApiClient
 import com.transad.app.api.ApiErrors
 import com.transad.app.api.CostCentersFilterState
 import com.transad.app.api.CostCentersResponse
+import com.transad.app.api.enqueueWithRetry
 import com.transad.app.databinding.ActivityInspectionBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -141,7 +142,7 @@ class InspectionActivity : AppCompatActivity() {
         ApiClient.costCentersApi.getCostCenters(
             search = filters.search,
             status = filters.status
-        ).enqueue(object : Callback<CostCentersResponse> {
+        ).enqueueWithRetry(callback = object : Callback<CostCentersResponse> {
             override fun onResponse(call: Call<CostCentersResponse>, response: Response<CostCentersResponse>) {
                 binding.progressInspection.visibility = View.GONE
                 if (response.isSuccessful) {

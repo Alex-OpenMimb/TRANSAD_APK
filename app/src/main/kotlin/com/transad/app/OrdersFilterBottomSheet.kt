@@ -12,6 +12,7 @@ import com.transad.app.api.ApiClient
 import com.transad.app.api.ApiErrors
 import com.transad.app.api.CostCenter
 import com.transad.app.api.CostCentersResponse
+import com.transad.app.api.enqueueWithRetry
 import com.transad.app.api.OrdersFilterState
 import com.transad.app.databinding.BottomSheetOrdersFilterBinding
 import retrofit2.Call
@@ -97,7 +98,7 @@ class OrdersFilterBottomSheet(
         sheetBinding.progressCostCenters.visibility = View.VISIBLE
         sheetBinding.spinnerCostCenter.isEnabled = false
 
-        ApiClient.costCentersApi.getCostCenters().enqueue(object : Callback<CostCentersResponse> {
+        ApiClient.costCentersApi.getCostCenters().enqueueWithRetry(callback = object : Callback<CostCentersResponse> {
             override fun onResponse(call: Call<CostCentersResponse>, response: Response<CostCentersResponse>) {
                 sheetBinding.progressCostCenters.visibility = View.GONE
                 sheetBinding.spinnerCostCenter.isEnabled = true

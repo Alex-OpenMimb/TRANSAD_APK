@@ -87,12 +87,15 @@
     <string name="rfid_validation_required_license_plate">Indica la placa del vehículo</string>
     <string name="rfid_validation_position_number">La posición debe ser un número</string>
     <string name="rfid_hint_tire_code">Código de llanta (obligatorio)</string>
+    <string name="rfid_hint_retread_parent_product">Producto original de la llanta (obligatorio)</string>
     <string name="rfid_hint_position">Posición (número, obligatorio)</string>
     <string name="rfid_hint_observation">Observación (opcional)</string>
     <string name="rfid_detail_save">Guardar</string>
     <string name="rfid_detail_cancel">Cancelar</string>
     <string name="rfid_validation_required_tire">Indica el código de llanta</string>
+    <string name="rfid_validation_required_parent_product">Selecciona el producto original de la llanta</string>
     <string name="rfid_validation_required_position">Indica la posición</string>
+    <string name="retread_parent_products_load_error">No se pudo cargar el catálogo de llantas</string>
     <string name="rfid_item_line2">Placa: %1$s · Llanta: %2$s · Posición: %3$d</string>
     <string name="rfid_item_obs_prefix">Obs.: %1$s</string>
 
@@ -103,6 +106,17 @@
     <string name="home_title">Inicio</string>
     <string name="home_refresh">Actualizar inicio</string>
     <string name="home_refreshed">Inicio actualizado</string>
+
+    <string name="app_update_dialog_title">Nueva versión disponible</string>
+    <string name="app_update_dialog_message">Versión %1$s\n\n%2$s</string>
+    <string name="app_update_no_changelog">Incluye mejoras y correcciones.</string>
+    <string name="app_update_action_update">Actualizar</string>
+    <string name="app_update_action_later">Después</string>
+    <string name="app_update_notification_title">Actualización TRANSAD</string>
+    <string name="app_update_downloading">Descargando actualización…</string>
+    <string name="app_update_download_error">No se pudo iniciar la instalación de la actualización</string>
+    <string name="app_update_install_permission_message">Para instalar la actualización debes permitir instalar aplicaciones desde esta fuente.</string>
+    <string name="nav_app_version_format">v%1$s (build %2$d)</string>
     <string name="home_subtitle">Gestión de llantas y operaciones</string>
     <string name="home_welcome">Hola, %1$s</string>
     <string name="home_user_label">Tu perfil</string>
@@ -273,8 +287,15 @@
     <string name="inspection_already_today_title">Inspección ya registrada</string>
     <string name="inspection_already_today_message">La etiqueta %1$s ya fue inspeccionada hoy en este vehículo. Solo se permite una inspección por día.</string>
     <string name="menu_perfil">Perfil</string>
+    <string name="menu_cambiar_empresa">Cambiar empresa</string>
     <string name="menu_section_cuenta">Cuenta</string>
     <string name="menu_logout">Cerrar sesión</string>
+
+    <string name="business_selector_title">Seleccionar empresa</string>
+    <string name="business_selector_current_label">Actual: %1$s</string>
+    <string name="business_select_ok">Empresa actualizada a %1$s. Actualizando datos…</string>
+    <string name="business_select_error">No se pudo cambiar de empresa</string>
+    <string name="business_load_error">No se pudieron cargar las empresas disponibles</string>
     <string name="menu_api_logs">Logs API (desarrollo)</string>
 
     <string name="api_logs_title">Logs de API</string>

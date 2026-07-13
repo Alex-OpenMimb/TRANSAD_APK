@@ -4,19 +4,14 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
-import com.google.gson.stream.JsonReader
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Converter
 import retrofit2.Retrofit
-import java.io.StringReader
 import java.lang.reflect.Type
 
-/**
- * Lee el body completo como texto, limpia basura al inicio y parsea con JsonReader lenient.
- * Evita fallos por logging del body y por Gson intentando mapear campos anidados enormes.
- */
+/** Parsea el body completo con Gson (más robusto que streaming manual). */
 class ApiJsonConverterFactory private constructor(
     private val gson: Gson
 ) : Converter.Factory() {
@@ -26,7 +21,6 @@ class ApiJsonConverterFactory private constructor(
         annotations: Array<Annotation>,
         retrofit: Retrofit
     ): Converter<ResponseBody, *>? {
-        val adapter: TypeAdapter<*> = gson.getAdapter(TypeToken.get(type))
         return Converter { body ->
             body.use { responseBody ->
                 val raw = responseBody.string()
@@ -34,9 +28,8 @@ class ApiJsonConverterFactory private constructor(
                     throw JsonSyntaxException("Respuesta vacía del servidor")
                 }
                 val json = sanitizeJsonPayload(raw)
-                val reader = JsonReader(StringReader(json)).apply { isLenient = true }
                 @Suppress("UNCHECKED_CAST")
-                (adapter.read(reader) as Any?)
+                gson.fromJson<Any>(json, type) as Any?
                     ?: throw JsonSyntaxException("No se pudo interpretar la respuesta del servidor")
             }
         }
@@ -47,7 +40,7 @@ class ApiJsonConverterFactory private constructor(
         parameterAnnotations: Array<Annotation>,
         methodAnnotations: Array<Annotation>,
         retrofit: Retrofit
-    ): Converter<*, okhttp3.RequestBody>? {
+    ): Converter<*, RequestBody>? {
         val adapter: TypeAdapter<*> = gson.getAdapter(TypeToken.get(type))
         return Converter<Any, RequestBody> { value ->
             @Suppress("UNCHECKED_CAST")

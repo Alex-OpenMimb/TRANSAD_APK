@@ -74,4 +74,14 @@
         android:textSize="13sp"
         tools:text="superadmin@transad.com" />
 
+    <TextView
+        android:id="@+id/tvNavAppVersion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:alpha="0.7"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        tools:text="v1.0 (build 1)" />
+
 </LinearLayout>

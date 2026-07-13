@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException
 object ApiGson {
 
     val instance: Gson = GsonBuilder()
+        .setLenient()
         .registerTypeAdapter(OrdersResponse::class.java, OrdersResponseAdapter())
         .registerTypeAdapter(OrderResponse::class.java, OrderResponseAdapter())
         .registerTypeAdapter(CostCentersResponse::class.java, CostCentersResponseAdapter())
@@ -20,4 +21,7 @@ fun Throwable.isJsonParseError(): Boolean =
         cause is JsonSyntaxException ||
         message?.contains("JsonReader", ignoreCase = true) == true ||
         message?.contains("Expected ", ignoreCase = true) == true ||
-        message?.contains("End of input", ignoreCase = true) == true
+        message?.contains("End of input", ignoreCase = true) == true ||
+        message?.contains("Unterminated", ignoreCase = true) == true ||
+        message?.contains("end of stream", ignoreCase = true) == true ||
+        message?.contains("truncada", ignoreCase = true) == true

@@ -16,8 +16,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.transad.app.api.ApiClient
 import com.transad.app.api.OrderProduct
 import com.transad.app.api.OrderResponse
+import com.transad.app.api.Product
 import com.transad.app.api.ProductEntitiesRequest
 import com.transad.app.api.ProductEntitiesResponse
+import com.transad.app.api.ProductsResponse
 import com.transad.app.api.RfidScanPayload
 import com.transad.app.databinding.ActivityOrderDetailBinding
 import com.transad.app.databinding.BottomSheetRfidReadBinding
@@ -28,6 +30,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.ArrayDeque
 import java.util.concurrent.atomic.AtomicLong
+
+/** `product_type_id` del catálogo "Llantas" usado como producto original de una Banda de reencauche. */
+private const val TIRE_PARENT_PRODUCT_TYPE_ID = 1
 
 class OrderDetailActivity : AppCompatActivity() {
 
@@ -42,6 +47,9 @@ class OrderDetailActivity : AppCompatActivity() {
     private lateinit var licensePlateStore: OrderLicensePlateStore
     private val rfidScanRows = mutableListOf<RfidScanRow>()
     private val nextScanRowId = AtomicLong(1L)
+
+    /** Catálogo de llantas (product_type_id=1) para elegir el producto original de una Banda de reencauche. */
+    private var retreadParentProductsCache: List<Product>? = null
 
     private val rfidBeepHandler = Handler(Looper.getMainLooper())
     private var rfidReadToneGenerator: ToneGenerator? = null
@@ -203,10 +211,44 @@ class OrderDetailActivity : AppCompatActivity() {
             .show()
     }
 
+    /** Carga (una vez por sesión) el catálogo de llantas para el selector de producto original. */
+    private fun withRetreadParentProducts(onReady: (List<Product>) -> Unit) {
+        retreadParentProductsCache?.let { onReady(it); return }
+
+        ApiClient.productsApi.getProducts(productTypeId = TIRE_PARENT_PRODUCT_TYPE_ID)
+            .enqueue(object : Callback<ProductsResponse> {
+                override fun onResponse(call: Call<ProductsResponse>, response: Response<ProductsResponse>) {
+                    if (!response.isSuccessful) {
+                        ApiErrorUi.showHttpError(
+                            this@OrderDetailActivity,
+                            getString(R.string.retread_parent_products_load_error),
+                            response
+                        )
+                        onReady(emptyList())
+                        return
+                    }
+                    val products = response.body()?.data.orEmpty()
+                    retreadParentProductsCache = products
+                    onReady(products)
+                }
+
+                override fun onFailure(call: Call<ProductsResponse>, t: Throwable) {
+                    ApiErrorUi.showNetworkError(
+                        this@OrderDetailActivity,
+                        getString(R.string.retread_parent_products_load_error),
+                        t
+                    )
+                    onReady(emptyList())
+                }
+            })
+    }
+
     private fun showRfidScanDetailDialog(
         epc: String,
         licensePlate: String,
         editExisting: RfidScanPayload? = null,
+        tireLine: OrderProduct? = null,
+        retreadParentProducts: List<Product> = emptyList(),
         onLicensePlateChanged: (String) -> Unit,
         onFinished: (RfidScanPayload?) -> Unit
     ) {
@@ -217,6 +259,27 @@ class OrderDetailActivity : AppCompatActivity() {
             dialogBinding.etTireCode.setText(existing.tireCode)
             dialogBinding.etPosition.setText(existing.position.toString())
             dialogBinding.etObservation.setText(existing.observation.orEmpty())
+        }
+
+        val requiresParentProduct = tireLine.isRetreadBandLine()
+        var selectedParentProduct: Product? = null
+        if (requiresParentProduct) {
+            dialogBinding.tilRetreadParentProduct.visibility = View.VISIBLE
+            dialogBinding.actvRetreadParentProduct.setAdapter(
+                RetreadParentProductAdapter(this, retreadParentProducts)
+            )
+            dialogBinding.actvRetreadParentProduct.setOnItemClickListener { _, _, position, _ ->
+                selectedParentProduct = retreadParentProducts.getOrNull(position)
+                dialogBinding.tilRetreadParentProduct.error = null
+            }
+
+            val existingParentId = editExisting?.parentProductId
+            if (existingParentId != null) {
+                selectedParentProduct = retreadParentProducts.firstOrNull { it.id == existingParentId }
+                selectedParentProduct?.let {
+                    dialogBinding.actvRetreadParentProduct.setText(it.name?.trim().orEmpty(), false)
+                }
+            }
         }
 
         val dlg = MaterialAlertDialogBuilder(this)
@@ -230,6 +293,7 @@ class OrderDetailActivity : AppCompatActivity() {
         fun clearFieldErrors() {
             dialogBinding.tilLicensePlate.error = null
             dialogBinding.tilTireCode.error = null
+            dialogBinding.tilRetreadParentProduct.error = null
             dialogBinding.tilPosition.error = null
         }
 
@@ -247,6 +311,11 @@ class OrderDetailActivity : AppCompatActivity() {
                 dialogBinding.tilTireCode.error = getString(R.string.rfid_validation_required_tire)
                 ok = false
             }
+            if (requiresParentProduct && selectedParentProduct == null) {
+                dialogBinding.tilRetreadParentProduct.error =
+                    getString(R.string.rfid_validation_required_parent_product)
+                ok = false
+            }
             val position = posText.toIntOrNull()
             if (posText.isEmpty() || position == null) {
                 dialogBinding.tilPosition.error = getString(R.string.rfid_validation_position_number)
@@ -261,6 +330,7 @@ class OrderDetailActivity : AppCompatActivity() {
                 rfidCode = epc,
                 tireCode = tire,
                 licensePlate = normalizedPlate,
+                parentProductId = selectedParentProduct?.id,
                 position = position!!,
                 observation = dialogBinding.etObservation.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
             )
@@ -343,20 +413,37 @@ class OrderDetailActivity : AppCompatActivity() {
         fun openScanDialog(epc: String, editRow: RfidScanRow?) {
             pauseReader()
             detailDialogOpen = true
-            showRfidScanDetailDialog(
-                epc = epc,
-                licensePlate = orderLicensePlate,
-                editExisting = editRow?.scan,
-                onLicensePlateChanged = { plate ->
-                    orderLicensePlate = plate
-                    licensePlateStore.save(orderId, plate)
+
+            // Misma posición que tendrá este scan en la cola de líneas de llanta pendientes
+            // (ver buildProductEntityItemsForScans), para saber si requiere producto original.
+            val scanIndex = editRow?.let { row -> rfidScanRows.indexOfFirst { it.stableId == row.stableId } }
+                ?: rfidScanRows.size
+            val tireLine = pendingTireLines(orderProductsList).getOrNull(scanIndex)
+
+            fun openWithParentProducts(products: List<Product>) {
+                showRfidScanDetailDialog(
+                    epc = epc,
+                    licensePlate = orderLicensePlate,
+                    editExisting = editRow?.scan,
+                    tireLine = tireLine,
+                    retreadParentProducts = products,
+                    onLicensePlateChanged = { plate ->
+                        orderLicensePlate = plate
+                        licensePlateStore.save(orderId, plate)
+                    }
+                ) { payload ->
+                    detailDialogOpen = false
+                    if (sessionActive && payload != null) {
+                        saveOrUpdateScan(payload, editRow?.stableId)
+                    }
+                    if (sessionActive) rfidSession.tryConsumeQueue()
                 }
-            ) { payload ->
-                detailDialogOpen = false
-                if (sessionActive && payload != null) {
-                    saveOrUpdateScan(payload, editRow?.stableId)
-                }
-                if (sessionActive) rfidSession.tryConsumeQueue()
+            }
+
+            if (tireLine.isRetreadBandLine()) {
+                withRetreadParentProducts { products -> openWithParentProducts(products) }
+            } else {
+                openWithParentProducts(emptyList())
             }
         }
 

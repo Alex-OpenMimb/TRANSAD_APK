@@ -59,6 +59,20 @@ fun OrderProduct.isLinePending(): Boolean {
     return scannedQuantity < productQuantity
 }
 
+/** `product_type_id` de "Banda de reencauche" en el catálogo de productos. */
+const val RETREAD_BAND_PRODUCT_TYPE_ID = 3
+
+/** true si esta línea de llanta corresponde a un producto Banda de reencauche (requiere `parent_id`). */
+fun OrderProduct?.isRetreadBandLine(): Boolean = this?.productable?.productTypeId == RETREAD_BAND_PRODUCT_TYPE_ID
+
+/**
+ * Líneas de llanta pendientes en el mismo orden en que [buildProductEntityItemsForScans] las va
+ * asignando (una por cada scan, en orden de captura). Permite al diálogo de captura saber, antes
+ * de enviar el lote, con qué línea de llanta va a emparejarse un scan concreto.
+ */
+fun pendingTireLines(orderProducts: List<OrderProduct>): List<OrderProduct> =
+    orderProducts.filter { it.lineKind() == ProductLineKind.LLANTA && it.isLinePending() }.sortedBy { it.id }
+
 private fun RfidScanPayload.buildLlantaAdditionalInfo(): ProductEntityAdditionalInformation? {
     val text = observation?.trim().orEmpty()
     if (text.isEmpty()) return null
@@ -72,7 +86,8 @@ private fun RfidScanPayload.toEntityItem(
     code: String,
     type: String,
     pairedOrderProductId: Int? = null,
-    includeAdditionalInfo: Boolean = false
+    includeAdditionalInfo: Boolean = false,
+    parentId: Int? = null
 ): ProductEntityItem = ProductEntityItem(
     productId = productId,
     quantity = 1,
@@ -83,7 +98,8 @@ private fun RfidScanPayload.toEntityItem(
     licensePlate = licensePlate.trim().uppercase(),
     position = position,
     pairedOrderProductId = pairedOrderProductId,
-    additionalInformation = if (includeAdditionalInfo) buildLlantaAdditionalInfo() else null
+    additionalInformation = if (includeAdditionalInfo) buildLlantaAdditionalInfo() else null,
+    parentId = parentId
 )
 
 /**
@@ -104,11 +120,7 @@ fun buildProductEntityItemsForScans(
             .filter { it.lineKind() == ProductLineKind.ETIQUETA && it.isLinePending() }
             .sortedBy { it.id }
     )
-    val tireQueue = ArrayDeque(
-        orderProducts
-            .filter { it.lineKind() == ProductLineKind.LLANTA && it.isLinePending() }
-            .sortedBy { it.id }
-    )
+    val tireQueue = ArrayDeque(pendingTireLines(orderProducts))
 
     if (tagQueue.isEmpty()) {
         return Result.failure(IllegalStateException("NO_TAG_LINE"))
@@ -148,7 +160,8 @@ fun buildProductEntityItemsForScans(
                 code = scan.tireCode.trim(),
                 type = tireLine.entityTypeForApi(),
                 pairedOrderProductId = null,
-                includeAdditionalInfo = true
+                includeAdditionalInfo = true,
+                parentId = if (tireLine.isRetreadBandLine()) scan.parentProductId else null
             )
         )
     }

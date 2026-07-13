@@ -120,7 +120,9 @@ data class RfidScanPayload(
     val tireCode: String,
     val licensePlate: String,
     val position: Int,
-    val observation: String? = null
+    val observation: String? = null,
+    /** Producto (product_type_id=1, Llantas) elegido cuando la línea es Banda de reencauche. */
+    val parentProductId: Int? = null
 )
 
 /** `POST api/product-entities` */
@@ -139,7 +141,9 @@ data class ProductEntityItem(
     @SerializedName("position") val position: Int,
     /** Obligatorio en `type: etiqueta`: id de la línea llanta emparejada en el mismo envío. */
     @SerializedName("paired_order_product_id") val pairedOrderProductId: Int? = null,
-    @SerializedName("additional_information") val additionalInformation: ProductEntityAdditionalInformation? = null
+    @SerializedName("additional_information") val additionalInformation: ProductEntityAdditionalInformation? = null,
+    /** Solo aplica si `product_id` es Banda de reencauche y `code` no existe todavía; el backend lo ignora en Llanta/Etiqueta. */
+    @SerializedName("parent_id") val parentId: Int? = null
 )
 
 data class ProductEntityAdditionalInformation(
