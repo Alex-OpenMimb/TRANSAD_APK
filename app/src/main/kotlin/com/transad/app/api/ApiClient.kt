@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    const val BASE_URL = "http://192.168.80.23:8000"
+    const val BASE_URL = "https://tires.transadsas-group.com/"
 
     private var appContext: Context? = null
 
