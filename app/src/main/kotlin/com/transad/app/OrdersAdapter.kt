@@ -28,11 +28,18 @@ class OrdersAdapter(
             binding.tvOrderType.text = order.typeOrder
             binding.tvOrderObservations.text = order.getObservations().ifBlank { "—" }
             binding.tvOrderDate.text = formatDate(order.createdAt)
-            binding.chipStatus.text = if (order.status) binding.root.context.getString(R.string.order_status_active)
-                else binding.root.context.getString(R.string.order_status_inactive)
-            binding.chipStatus.setChipBackgroundColorResource(
-                if (order.status) R.color.status_active else R.color.status_inactive
+
+            val workflow = order.workflowStatus()
+            binding.chipStatus.text = workflow.displayLabel(
+                fallback = binding.root.context.getString(R.string.order_workflow_status_open)
             )
+            binding.chipStatus.setChipBackgroundColorResource(colorForStatusCode(workflow.normalizedCode()))
+        }
+
+        private fun colorForStatusCode(code: String): Int = when (code) {
+            "pending" -> R.color.order_status_pending
+            "closed" -> R.color.order_status_closed
+            else -> R.color.order_status_open
         }
 
         private fun formatDate(createdAt: String): String {

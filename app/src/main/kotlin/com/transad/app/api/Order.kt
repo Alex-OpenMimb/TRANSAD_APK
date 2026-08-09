@@ -34,6 +34,13 @@ data class ProductsResponse(
     @SerializedName("status") val status: Int = 0
 )
 
+data class OrderStatusesResponse(
+    @SerializedName("data") val data: List<OrderStatusInfo>,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("response") val response: Boolean = false,
+    @SerializedName("status") val status: Int = 0
+)
+
 @Parcelize
 data class CostCenter(
     @SerializedName("id") val id: Int = 0,
@@ -43,21 +50,44 @@ data class CostCenter(
     @SerializedName("status") val status: Boolean = true
 ) : Parcelable
 
+@Parcelize
+data class OrderStatusInfo(
+    @SerializedName("id") val id: Int? = null,
+    @SerializedName("code") val code: String? = null,
+    @SerializedName("label") val label: String? = null
+) : Parcelable {
+    fun displayLabel(fallback: String = "Abierto"): String =
+        label?.trim()?.takeIf { it.isNotEmpty() }
+            ?: when (code?.trim()?.lowercase()) {
+                "open" -> fallback
+                "pending" -> "Pendiente"
+                "closed" -> "Cerrado"
+                else -> fallback
+            }
+
+    fun normalizedCode(): String = code?.trim()?.lowercase().orEmpty().ifBlank { "open" }
+}
+
 /** Orden resumida para el listado (`GET api/orders`). No incluye `order_products`. */
 data class OrderListItem(
     @SerializedName("id") val id: Int = 0,
     @SerializedName("user_id") val userId: Int = 0,
     @SerializedName("cost_center_id") val costCenterId: Int? = null,
+    @SerializedName("order_status_id") val orderStatusId: Int? = null,
     @SerializedName("reference") val reference: String = "",
     @SerializedName("status") val status: Boolean = true,
     @SerializedName("type_order") val typeOrder: String = "",
     @SerializedName("document") val document: JsonElement? = null,
     @SerializedName("created_at") val createdAt: String = "",
     @SerializedName("updated_at") val updatedAt: String = "",
-    @SerializedName("cost_center") val costCenter: CostCenter? = null
+    @SerializedName("cost_center") val costCenter: CostCenter? = null,
+    @SerializedName("order_status") val orderStatus: OrderStatusInfo? = null
 ) {
     fun licensePlateFromCostCenter(): String =
         costCenter?.licensePlate?.trim()?.takeIf { it.isNotEmpty() }?.uppercase() ?: ""
+
+    fun workflowStatus(): OrderStatusInfo =
+        orderStatus ?: OrderStatusInfo(code = "open", label = "Abierto")
 
     fun getObservations(): String {
         if (document == null || !document.isJsonObject) return ""
@@ -74,6 +104,7 @@ data class Order(
     @SerializedName("business_id") val businessId: Int = 0,
     @SerializedName("requisition_id") val requisitionId: Int = 0,
     @SerializedName("cost_center_id") val costCenterId: Int? = null,
+    @SerializedName("order_status_id") val orderStatusId: Int? = null,
     @SerializedName("reference") val reference: String = "",
     @SerializedName("status") val status: Boolean = true,
     @SerializedName("type_order") val typeOrder: String = "",
@@ -81,11 +112,15 @@ data class Order(
     @SerializedName("created_at") val createdAt: String = "",
     @SerializedName("updated_at") val updatedAt: String = "",
     @SerializedName("cost_center") val costCenter: CostCenter? = null,
+    @SerializedName("order_status") val orderStatus: OrderStatusInfo? = null,
     @SerializedName("order_products") val orderProducts: List<OrderProduct>? = null
 ) {
     /** Placa del centro de costo asociado a la orden, si viene en la API. */
     fun licensePlateFromCostCenter(): String =
         costCenter?.licensePlate?.trim()?.takeIf { it.isNotEmpty() }?.uppercase() ?: ""
+
+    fun workflowStatus(): OrderStatusInfo =
+        orderStatus ?: OrderStatusInfo(code = "open", label = "Abierto")
 
     /** Obtiene las observaciones del document (puede ser objeto o array vacío). */
     fun getObservations(): String {

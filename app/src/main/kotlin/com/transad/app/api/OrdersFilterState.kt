@@ -6,12 +6,15 @@ data class OrdersFilterState(
     val dateFrom: String? = null,
     val dateTo: String? = null,
     val costCenterId: Int? = null,
-    val licensePlate: String? = null
+    val licensePlate: String? = null,
+    /** Código de workflow: `open`, `pending`, `closed`. */
+    val statusCode: String? = null
 ) {
     fun hasAnyFilter(): Boolean =
         !reference.isNullOrBlank() ||
             !dateFrom.isNullOrBlank() ||
             !dateTo.isNullOrBlank() ||
             costCenterId != null ||
-            !licensePlate.isNullOrBlank()
+            !licensePlate.isNullOrBlank() ||
+            !statusCode.isNullOrBlank()
 }

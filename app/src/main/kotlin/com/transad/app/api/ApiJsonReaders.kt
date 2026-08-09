@@ -109,22 +109,47 @@ internal fun JsonReader.readCostCenterList(): List<CostCenter> {
     return items
 }
 
+internal fun JsonReader.readOrderStatusInfo(): OrderStatusInfo {
+    beginObject()
+    var id: Int? = null
+    var code: String? = null
+    var label: String? = null
+    while (hasNext()) {
+        when (nextName()) {
+            "id" -> id = readIntValue().takeIf { it != 0 }
+            "code" -> code = readStringValue()
+            "label" -> label = readStringValue()
+            else -> skipValue()
+        }
+    }
+    endObject()
+    return OrderStatusInfo(id = id, code = code, label = label)
+}
+
 internal fun JsonReader.readOrderListItem(): OrderListItem {
     beginObject()
     var id = 0
     var userId = 0
     var costCenterId: Int? = null
+    var orderStatusId: Int? = null
     var reference = ""
     var status = true
     var typeOrder = ""
     var createdAt = ""
     var updatedAt = ""
     var costCenter: CostCenter? = null
+    var orderStatus: OrderStatusInfo? = null
     while (hasNext()) {
         when (nextName()) {
             "id" -> id = readIntValue()
             "user_id" -> userId = readIntValue()
             "cost_center_id" -> costCenterId = readIntValue().takeIf { it != 0 }
+            "order_status_id" -> orderStatusId = if (peek() == JsonToken.NULL) {
+                nextNull()
+                null
+            } else {
+                readIntValue().takeIf { it != 0 }
+            }
             "reference" -> reference = readStringValue().orEmpty()
             "status" -> status = readBoolValue(true)
             "type_order" -> typeOrder = readStringValue().orEmpty()
@@ -137,6 +162,12 @@ internal fun JsonReader.readOrderListItem(): OrderListItem {
             } else {
                 readCostCenter()
             }
+            "order_status" -> orderStatus = if (peek() == JsonToken.NULL) {
+                nextNull()
+                null
+            } else {
+                readOrderStatusInfo()
+            }
             "order_products" -> skipValue()
             else -> skipValue()
         }
@@ -146,12 +177,14 @@ internal fun JsonReader.readOrderListItem(): OrderListItem {
         id = id,
         userId = userId,
         costCenterId = costCenterId,
+        orderStatusId = orderStatusId,
         reference = reference,
         status = status,
         typeOrder = typeOrder,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        costCenter = costCenter
+        costCenter = costCenter,
+        orderStatus = orderStatus
     )
 }
 
@@ -334,12 +367,14 @@ internal fun JsonReader.readOrder(): Order {
     var businessId = 0
     var requisitionId = 0
     var costCenterId: Int? = null
+    var orderStatusId: Int? = null
     var reference = ""
     var status = true
     var typeOrder = ""
     var createdAt = ""
     var updatedAt = ""
     var costCenter: CostCenter? = null
+    var orderStatus: OrderStatusInfo? = null
     var orderProducts: List<OrderProduct>? = null
     while (hasNext()) {
         when (nextName()) {
@@ -348,6 +383,12 @@ internal fun JsonReader.readOrder(): Order {
             "business_id" -> businessId = readIntValue()
             "requisition_id" -> requisitionId = readIntValue()
             "cost_center_id" -> costCenterId = readIntValue().takeIf { it != 0 }
+            "order_status_id" -> orderStatusId = if (peek() == JsonToken.NULL) {
+                nextNull()
+                null
+            } else {
+                readIntValue().takeIf { it != 0 }
+            }
             "reference" -> reference = readStringValue().orEmpty()
             "status" -> status = readBoolValue(true)
             "type_order" -> typeOrder = readStringValue().orEmpty()
@@ -359,6 +400,12 @@ internal fun JsonReader.readOrder(): Order {
                 null
             } else {
                 readCostCenter()
+            }
+            "order_status" -> orderStatus = if (peek() == JsonToken.NULL) {
+                nextNull()
+                null
+            } else {
+                readOrderStatusInfo()
             }
             "order_products" -> orderProducts = if (peek() == JsonToken.NULL) {
                 nextNull()
@@ -376,12 +423,14 @@ internal fun JsonReader.readOrder(): Order {
         businessId = businessId,
         requisitionId = requisitionId,
         costCenterId = costCenterId,
+        orderStatusId = orderStatusId,
         reference = reference,
         status = status,
         typeOrder = typeOrder,
         createdAt = createdAt,
         updatedAt = updatedAt,
         costCenter = costCenter,
+        orderStatus = orderStatus,
         orderProducts = orderProducts
     )
 }

@@ -150,7 +150,8 @@ class OrdersActivity : AppCompatActivity() {
             dateFrom = filters.dateFrom,
             dateTo = filters.dateTo,
             costCenterId = filters.costCenterId,
-            licensePlate = filters.licensePlate
+            licensePlate = filters.licensePlate,
+            statusCode = filters.statusCode
         ).enqueueWithRetry(callback = object : Callback<OrdersResponse> {
             override fun onResponse(call: Call<OrdersResponse>, response: Response<OrdersResponse>) {
                 binding.progressOrders.visibility = View.GONE

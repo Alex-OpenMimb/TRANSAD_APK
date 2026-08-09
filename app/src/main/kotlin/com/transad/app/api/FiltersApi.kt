@@ -14,4 +14,7 @@ interface FiltersApi {
 
     @GET("api/filters/conditions")
     fun getConditions(): Call<JsonElement>
+
+    @GET("api/filters/order-statuses")
+    fun getOrderStatuses(): Call<OrderStatusesResponse>
 }

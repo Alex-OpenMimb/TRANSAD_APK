@@ -69,6 +69,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:text="@string/orders_filter_order_status"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <ProgressBar
+        android:id="@+id/progressOrderStatuses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/spinnerOrderStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minHeight="48dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="@string/orders_filter_cost_center"
         android:textSize="14sp"
         android:textStyle="bold" />

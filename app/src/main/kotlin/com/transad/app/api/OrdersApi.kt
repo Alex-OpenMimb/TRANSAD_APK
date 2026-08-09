@@ -14,7 +14,8 @@ interface OrdersApi {
         @Query("date_from") dateFrom: String? = null,
         @Query("date_to") dateTo: String? = null,
         @Query("cost_center_id") costCenterId: Int? = null,
-        @Query("license_plate") licensePlate: String? = null
+        @Query("license_plate") licensePlate: String? = null,
+        @Query("status_code") statusCode: String? = null
     ): Call<OrdersResponse>
 
     @GET("api/orders/{id}")
